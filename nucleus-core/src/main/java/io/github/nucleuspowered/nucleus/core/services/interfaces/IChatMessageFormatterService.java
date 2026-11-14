@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.interfaces;
 
+import io.github.nucleuspowered.nucleus.core.util.NucleusChatType;
 import com.google.inject.ImplementedBy;
 import io.github.nucleuspowered.nucleus.api.util.NoExceptionAutoClosable;
 import io.github.nucleuspowered.nucleus.core.services.impl.chatmessageformatter.ChatMessageFormatterService;
@@ -58,6 +59,8 @@ public interface IChatMessageFormatterService {
         default void formatMessageEvent(final Audience audience, final PlayerChatEvent.Submit event) {
             this.recipientFilter().ifPresent(event::setFilter);
             event.setMessage(this.formatMessage(audience, event.message()));
+            // formatMessage builds the whole line, name included, so don't let the chat type add "<sender>"
+            NucleusChatType.apply(event, Component.empty());
         }
 
     }

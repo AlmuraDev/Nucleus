@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.chat.listeners;
 
+import io.github.nucleuspowered.nucleus.core.util.NucleusChatType;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.placeholder.NucleusPlaceholderService;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
@@ -106,10 +107,10 @@ public class ChatListener implements IReloadableService.Reloadable, ListenerBase
         if (!AdventureUtils.isEmpty(footer)) {
             builder.append(footer);
         }
-        // TODO(4.0): vanilla chat types still wrap the sender as "<sender> message". Register a "nucleus:chat" ChatType
-        //  (sender + content, no brackets) through a datapack and set it with event.setChatType(...) so the template
-        //  renders exactly as configured.
-        event.setSender(header);
+        // nucleus:chat is just sender + content: the template's prefix already holds the name and separator
+        if (!NucleusChatType.apply(event, header)) {
+            event.setSender(header);
+        }
         event.setMessage(AdventureUtils.isEmpty(footer) ? body : LinearComponents.linear(body, footer));
     }
 
