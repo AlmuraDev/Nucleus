@@ -11,7 +11,6 @@ import io.github.nucleuspowered.nucleus.core.IPluginInfo;
 import io.github.nucleuspowered.nucleus.core.NucleusCore;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.timing.DummyTimingsService;
-import io.github.nucleuspowered.nucleus.core.services.impl.timing.TimingsService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.ITimingsService;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -47,12 +46,9 @@ public class NucleusInjectorModule extends AbstractModule {
     }
 
     @Provides
-    private ITimingsService provideTimingsService(final PluginContainer container) {
-        try {
-            return new TimingsService(container);
-        } catch (final Exception ex) {
-            return new DummyTimingsService();
-        }
+    private ITimingsService provideTimingsService() {
+        // Sponge removed Aikar timings after API 8; use a profiler (e.g. spark) instead
+        return new DummyTimingsService();
     }
 
 }

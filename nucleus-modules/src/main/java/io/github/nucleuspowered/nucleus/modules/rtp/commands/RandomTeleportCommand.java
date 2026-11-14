@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.rtp.commands;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.module.rtp.NucleusRTPService;
 import io.github.nucleuspowered.nucleus.api.module.rtp.kernel.RTPKernel;
@@ -99,7 +100,7 @@ public class RandomTeleportCommand implements ICommandExecutor, IReloadableServi
 
         if (this.rc.isPerWorldPermissions()) {
             final String name = wp.key().asString();
-            if (!context.testPermission(RTPPermissions.RTP_WORLDS + "." + name.toLowerCase())) {
+            if (!context.testPermission(RTPPermissions.RTP_WORLDS + "." + Util.worldPermissionSuffix(wp.key()))) {
                 return context.errorResult("command.rtp.worldnoperm", name);
             }
         }

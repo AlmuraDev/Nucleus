@@ -147,7 +147,6 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
 
     // TODO: split this to appropriate events
     @Listener
-    @Include(Cancellable.class)
     public void onInteract(final InteractEvent event, @Root final ServerPlayer player) {
         if (this.handler.isPlayerJailed(player.uniqueId()) && event instanceof Cancellable) {
             ((Cancellable) event).setCancelled(true);
@@ -170,7 +169,7 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
     }
 
     @Listener
-    public void onLogout(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer serverPlayer) {
+    public void onLogout(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer serverPlayer) {
         this.handler.clearCacheFor(serverPlayer.uniqueId());
     }
 

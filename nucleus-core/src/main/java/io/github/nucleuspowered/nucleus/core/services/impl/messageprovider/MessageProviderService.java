@@ -109,7 +109,7 @@ public class MessageProviderService implements IMessageProviderService, IReloada
         this.defaultMessagesResource = new PropertiesMessageRepository(
                 serviceCollection.textStyleService(),
                 serviceCollection.playerDisplayNameService(),
-                ResourceBundle.getBundle(MESSAGES_BUNDLE, Locale.ROOT, UTF8Control.INSTANCE));
+                UTF8Control.getBundle(MESSAGES_BUNDLE, Locale.ROOT));
         this.configFileMessagesRepository = new ConfigFileMessagesRepository(
                 serviceCollection.textStyleService(),
                 serviceCollection.playerDisplayNameService(),
@@ -321,7 +321,7 @@ public class MessageProviderService implements IMessageProviderService, IReloada
                 return new PropertiesMessageRepository(
                         this.serviceCollection.textStyleService(),
                         this.serviceCollection.playerDisplayNameService(),
-                        ResourceBundle.getBundle(MESSAGES_BUNDLE, locale, UTF8Control.INSTANCE));
+                        UTF8Control.getBundle(MESSAGES_BUNDLE, locale));
             }
 
             return this.defaultMessagesResource;

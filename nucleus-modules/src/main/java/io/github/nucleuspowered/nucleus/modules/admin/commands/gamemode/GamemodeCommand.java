@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.admin.commands.gamemode;
 
+import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.core.Registry;
 import io.github.nucleuspowered.nucleus.modules.admin.AdminPermissions;
@@ -42,10 +43,7 @@ import java.util.Optional;
 public class GamemodeCommand extends GamemodeBase {
 
     private final Parameter.Value<GameMode> gameModeParameter =
-            Parameter.builder(GameMode.class)
-                    .key("Game Mode")
-                    .addParser(VariableValueParameters.registryEntryBuilder(RegistryTypes.GAME_MODE).defaultNamespace("minecraft").build())
-                    .build();
+            NucleusParameters.gameMode("Game Mode").optional().build();
 
     final Parameter.Value<ServerPlayer> playerValue;
 

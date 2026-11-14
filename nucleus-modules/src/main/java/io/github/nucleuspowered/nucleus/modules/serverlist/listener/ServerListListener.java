@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.serverlist.listener;
 
+import org.spongepowered.api.effect.VanishState;
 import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfig;
 import io.github.nucleuspowered.nucleus.modules.serverlist.services.ServerListService;
@@ -71,7 +72,7 @@ public class ServerListListener implements IReloadableService.Reloadable, Listen
             response.setHidePlayers(true);
         } else if (this.hideVanishPlayers) {
             final Collection<GameProfile> players = Sponge.server().onlinePlayers().stream()
-                    .filter(x -> !x.get(Keys.VANISH).orElse(false))
+                    .filter(x -> !x.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false))
                     .map(ServerPlayer::profile)
                     .collect(Collectors.toList());
 

@@ -85,10 +85,7 @@ public class MeCommand implements ICommandExecutor, IReloadableService.Reloadabl
             frame.addContext(EventContexts.SHOULD_FORMAT_CHANNEL, false);
             frame.pushCause(player);
 
-            final PlayerChatEvent event = player.simulateChat(messageToSend, frame.currentCause());
-            if (Sponge.eventManager().post(event)) {
-                return context.errorResult("command.me.cancel");
-            }
+            player.simulateChat(messageToSend, frame.currentCause());
         }
         return context.successResult();
     }

@@ -45,14 +45,13 @@ public class PowertoolListener implements ListenerBase {
     }
 
     @Listener
-    public void onLogout(final ServerSideConnectionEvent.Disconnect event) {
+    public void onLogout(final ServerSideConnectionEvent.Leave event) {
         this.service.reset(event.player().uniqueId());
     }
 
     @Listener
-    @Include(Cancellable.class)
     public void onUserInteract(final InteractEvent event, @Root final ServerPlayer player) {
-        if (event instanceof InteractBlockEvent) {
+        if (event instanceof InteractBlockEvent || !(event instanceof Cancellable)) {
             return;
         }
         // No item in hand or no permission -> no powertool.

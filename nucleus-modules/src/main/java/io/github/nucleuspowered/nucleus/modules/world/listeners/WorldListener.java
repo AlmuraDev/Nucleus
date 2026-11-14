@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.world.listeners;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.modules.world.WorldPermissions;
 import io.github.nucleuspowered.nucleus.modules.world.config.WorldConfig;
@@ -50,7 +51,7 @@ public class WorldListener implements ListenerBase.Conditional {
 
         final IPermissionService permissionService = this.serviceCollection.permissionService();
         if (!permissionService.isConsoleOverride(event.cause().first(Subject.class).orElse(player)) &&
-                !this.serviceCollection.permissionService().hasPermission(player, WorldPermissions.getWorldAccessPermission(target.key().asString()))) {
+                !this.serviceCollection.permissionService().hasPermission(player, WorldPermissions.getWorldAccessPermission(Util.worldPermissionSuffix(target.key())))) {
             event.setCancelled(true);
             if (!this.messageSent.contains(player.uniqueId())) {
                 this.serviceCollection.messageProvider().sendMessageTo(player, "world.access.denied", target.key().asString());

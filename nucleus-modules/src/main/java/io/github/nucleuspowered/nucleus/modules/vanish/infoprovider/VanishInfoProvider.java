@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.vanish.infoprovider;
 
+import org.spongepowered.api.effect.VanishState;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishPermissions;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
@@ -27,7 +28,7 @@ public class VanishInfoProvider implements NucleusProvider.Permission {
     @Override
     public @Nullable Component getText(final User user, final CommandCause source, final INucleusServiceCollection serviceCollection) {
         final IMessageProviderService providerService = serviceCollection.messageProvider();
-        final boolean isVanished = user.get(Keys.VANISH).orElse(false);
+        final boolean isVanished = user.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false);
         final String yesNo = providerService.getMessageString(isVanished ? "standard.yesno.true" : "standard.yesno.false");
         return providerService.getMessageFor(source.audience(), "seen.vanish", yesNo);
     }

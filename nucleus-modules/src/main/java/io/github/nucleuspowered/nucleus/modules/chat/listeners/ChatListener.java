@@ -58,20 +58,20 @@ public class ChatListener implements IReloadableService.Reloadable, ListenerBase
 
     // We do this first so that other plugins can alter it later if needs be.
     @Listener(order = Order.EARLY, beforeModifications = true)
-    public void onPlayerChatEventEarly(final PlayerChatEvent event, @Root final ServerPlayer player) {
+    public void onPlayerChatEventEarly(final PlayerChatEvent.Submit event, @Root final ServerPlayer player) {
         if (!this.chatConfig.isTryForceFormatting()) {
             this.onPlayerChatEvent(event, player);
         }
     }
 
     @Listener(order = Order.LATE)
-    public void onPlayerChatEventLate(final PlayerChatEvent event, @Root final ServerPlayer player) {
+    public void onPlayerChatEventLate(final PlayerChatEvent.Submit event, @Root final ServerPlayer player) {
         if (this.chatConfig.isTryForceFormatting()) {
             this.onPlayerChatEvent(event, player);
         }
     }
 
-    private void onPlayerChatEvent(final PlayerChatEvent event, @Root final ServerPlayer player) {
+    private void onPlayerChatEvent(final PlayerChatEvent.Submit event, @Root final ServerPlayer player) {
         if (this.chatMessageFormatterService.getNucleusChannel(player.uniqueId())
                 .map(IChatMessageFormatterService.Channel::willFormat).orElse(false)) {
             return;
@@ -106,9 +106,11 @@ public class ChatListener implements IReloadableService.Reloadable, ListenerBase
         if (!AdventureUtils.isEmpty(footer)) {
             builder.append(footer);
         }
-        event.setMessage(body);
-        event.setChatFormatter((sender, target, message, originalMessage) ->
-                Optional.of(LinearComponents.linear(header, message, footer)));
+        // TODO(4.0): vanilla chat types still wrap the sender as "<sender> message". Register a "nucleus:chat" ChatType
+        //  (sender + content, no brackets) through a datapack and set it with event.setChatType(...) so the template
+        //  renders exactly as configured.
+        event.setSender(header);
+        event.setMessage(AdventureUtils.isEmpty(footer) ? body : LinearComponents.linear(body, footer));
     }
 
     @Override

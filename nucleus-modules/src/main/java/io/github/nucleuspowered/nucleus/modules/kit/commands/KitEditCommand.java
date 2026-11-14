@@ -62,7 +62,7 @@ public class KitEditCommand implements ICommandExecutor {
         }
 
         final ViewableInventory kitInv = KitUtil.getKitInventoryBuilder();
-        kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).forEach(x -> kitInv.offer(x.createStack()));
+        kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).forEach(x -> kitInv.offer(x.asMutableCopy()));
         final InventoryMenu inventory = kitInv.asMenu();
         inventory.setTitle(context.getMessage("command.kit.edit.title", kitName));
         inventory.registerClose((cause, container) -> {

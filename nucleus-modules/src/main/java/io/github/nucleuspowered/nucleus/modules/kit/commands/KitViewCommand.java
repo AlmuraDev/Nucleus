@@ -48,12 +48,12 @@ public class KitViewCommand implements ICommandExecutor, IReloadableService.Relo
         final KitService service = context.getServiceCollection().getServiceUnchecked(KitService.class);
 
         final ViewableInventory kitInv = KitUtil.getKitInventoryBuilder();
-        kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).forEach(x -> kitInv.offer(x.createStack()));
+        kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).forEach(x -> kitInv.offer(x.asMutableCopy()));
         final InventoryMenu inventory = kitInv.asMenu();
         inventory.setTitle(context.getMessage("command.kit.edit.title", kitInfo.getName()));
         inventory.setReadOnly(true);
 
-        final List<ItemStack> lis = kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).map(ItemStackSnapshot::createStack)
+        final List<ItemStack> lis = kitInfo.getStacks().stream().filter(x -> !x.isEmpty()).map(ItemStackSnapshot::asMutableCopy)
                 .collect(Collectors.toList());
         if (this.processTokens) {
             service.processTokensInItemStacks(src, lis);

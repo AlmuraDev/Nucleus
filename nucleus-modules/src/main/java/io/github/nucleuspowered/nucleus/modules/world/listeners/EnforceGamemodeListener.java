@@ -66,10 +66,6 @@ public class EnforceGamemodeListener implements ListenerBase.Conditional {
     }
 
     private void enforce(final ServerPlayer player, final ServerWorld world) {
-        if (world.properties().gameMode() == GameModes.NOT_SET.get()) {
-            return;
-        }
-
         final Set<Context> contextSet = Sponge.server().serviceProvider().contextService().contextsFor(player.contextCause());
         contextSet.removeIf(x -> x.getKey().equals(Context.WORLD_KEY));
         contextSet.add(new Context(Context.WORLD_KEY, world.key().asString()));

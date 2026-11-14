@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.vanish.listener;
 
+import org.spongepowered.api.effect.VanishState;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishPermissions;
@@ -90,8 +91,8 @@ public class VanishListener implements IReloadableService.Reloadable, ListenerBa
     }
 
     @Listener
-    public void onQuit(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer player) {
-        if (player.get(Keys.VANISH).orElse(false)) {
+    public void onQuit(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer player) {
+        if (player.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false)) {
             this.storageManager.getUserService().get(player.uniqueId())
                     .thenAccept(x -> x.ifPresent(t -> t.set(VanishKeys.VANISH_STATUS, false)));
             if (this.vanishConfig.isSuppressMessagesOnVanish()) {

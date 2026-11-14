@@ -80,7 +80,7 @@ public class FlyListener implements IReloadableService.Reloadable, ListenerBase 
     }
 
     @Listener
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer pl) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer pl) {
         if (!this.flyConfig.isSaveOnQuit()) {
             return;
         }
@@ -131,7 +131,7 @@ public class FlyListener implements IReloadableService.Reloadable, ListenerBase 
     }
 
     static boolean shouldIgnoreFromGameMode(final Player player) {
-        final GameMode gm = player.get(Keys.GAME_MODE).orElse(GameModes.NOT_SET.get());
+        final GameMode gm = player.get(Keys.GAME_MODE).orElse(GameModes.SURVIVAL.get());
         return (gm.equals(GameModes.CREATIVE) || gm.equals(GameModes.SPECTATOR));
     }
 

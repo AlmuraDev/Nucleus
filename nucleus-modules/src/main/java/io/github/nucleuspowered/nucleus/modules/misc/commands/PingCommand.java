@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.misc.commands;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.modules.misc.MiscPermissions;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
@@ -34,9 +35,9 @@ public class PingCommand implements ICommandExecutor { // extends AbstractComman
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final ServerPlayer player = context.getPlayerFromArgs();
         if (context.is(player)) {
-            context.sendMessage("command.ping.current.self", player.connection().latency());
+            context.sendMessage("command.ping.current.self", Util.latency(player));
         } else {
-            context.sendMessage("command.ping.current.other", player.name(), player.connection().latency());
+            context.sendMessage("command.ping.current.other", player.name(), Util.latency(player));
         }
 
         return context.successResult();

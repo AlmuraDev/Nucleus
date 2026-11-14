@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.vanish.services;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishPermissions;
@@ -138,7 +139,7 @@ public class VanishService implements IReloadableService.Reloadable, ServiceBase
                             .displayName(Component.text(player.name()))
                             .profile(player.profile())
                             .gameMode(player.gameMode().get())
-                            .latency(player.connection().latency())
+                            .latency(Util.latency(player))
                             .list(x.tabList()).build());
                 }
             });

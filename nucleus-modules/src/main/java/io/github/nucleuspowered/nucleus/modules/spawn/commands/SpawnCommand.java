@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
@@ -98,7 +99,7 @@ public class SpawnCommand implements ICommandExecutor, IReloadableService.Reload
             });
 
         if (this.sc.isPerWorldPerms() &&
-                !context.testPermission(SpawnPermissions.SPAWN_WORLDS + "." + targetWorld.key().asString().toLowerCase())) {
+                !context.testPermission(SpawnPermissions.SPAWN_WORLDS + "." + Util.worldPermissionSuffix(targetWorld.key()))) {
             return context.errorResult("command.spawn.nopermsworld", targetWorld.key().asString().toLowerCase());
         }
 

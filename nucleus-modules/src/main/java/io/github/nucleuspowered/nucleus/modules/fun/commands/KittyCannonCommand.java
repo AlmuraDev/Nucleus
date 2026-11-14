@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.fun.commands;
 
+import org.spongepowered.api.world.explosion.ExplosionBlockInteractions;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
@@ -180,7 +181,7 @@ public class KittyCannonCommand implements ICommandExecutor {
             if (this.ticksToDestruction <= 0 || e.onGround().get()) {
                 // Cat explodes.
                 final Explosion explosion = Explosion.builder().location(e.serverLocation()).canCauseFire(this.causeFire)
-                    .shouldDamageEntities(this.damageEntities).shouldPlaySmoke(true).shouldBreakBlocks(this.breakBlocks)
+                    .shouldDamageEntities(this.damageEntities).shouldPlaySmoke(true).blockInteraction(this.breakBlocks ? ExplosionBlockInteractions.DESTROY.get() : ExplosionBlockInteractions.KEEP.get())
                     .radius(2).build();
                 e.remove();
                 try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {

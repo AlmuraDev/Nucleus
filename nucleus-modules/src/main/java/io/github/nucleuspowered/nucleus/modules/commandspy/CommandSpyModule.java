@@ -55,6 +55,6 @@ public final class CommandSpyModule implements IModule.Configurable<CommandSpyCo
 
     @Listener
     public void registerUserPreferenceKey(final RegisterRegistryValueEvent.GameScoped event) {
-        event.registry(this.userPreferenceService.getRegistryResourceType()).register(NucleusKeysProvider.COMMAND_SPY_KEY, CommandSpyKeys.COMMAND_SPY);
+        event.registry(this.userPreferenceService.getRegistryResourceType(), step -> step.register(NucleusKeysProvider.COMMAND_SPY_KEY, CommandSpyKeys.COMMAND_SPY));
     }
 }

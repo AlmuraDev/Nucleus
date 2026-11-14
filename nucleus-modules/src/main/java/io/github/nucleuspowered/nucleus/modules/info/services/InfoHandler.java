@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.info.services;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.io.TextFileController;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
@@ -51,12 +52,14 @@ public class InfoHandler implements IReloadableService.Reloadable, ServiceBase {
 
     }
 
-    private void copyIfNotExists(final Logger logger, final Pack pack, final ResourcePath path, final Path target) {
+    private void copyIfNotExists(final Logger logger, final String name, final Path target) {
         if (Files.notExists(target)) {
-            try (final Resource resource = pack.contents().requireResource(PackType.server(), path)) {
-                Files.copy(resource.inputStream(), target);
+            try {
+                if (!Util.copyBundledFile(name, target)) {
+                    logger.error("Could not find resource {} when it should exist.", name);
+                }
             } catch (final IOException e) {
-                logger.error("Could not find resource {} when it should exist.", path.toString());
+                logger.error("Could not copy resource {} to {}.", name, target, e);
             }
         }
     }
@@ -69,10 +72,9 @@ public class InfoHandler implements IReloadableService.Reloadable, ServiceBase {
             try {
                 Files.createDirectories(infoDir);
 
-                final Pack pack = Sponge.server().packRepository().pack(serviceCollection.pluginContainer());
-                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "info.txt"), infoDir.resolve("info.txt"));
-                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "colors.txt"), infoDir.resolve("colors.txt"));
-                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "links.txt"), infoDir.resolve("links.txt"));
+                this.copyIfNotExists(serviceCollection.logger(), "info.txt", infoDir.resolve("info.txt"));
+                this.copyIfNotExists(serviceCollection.logger(), "colors.txt", infoDir.resolve("colors.txt"));
+                this.copyIfNotExists(serviceCollection.logger(), "links.txt", infoDir.resolve("links.txt"));
             } catch (final IOException e) {
                 e.printStackTrace();
                 return;

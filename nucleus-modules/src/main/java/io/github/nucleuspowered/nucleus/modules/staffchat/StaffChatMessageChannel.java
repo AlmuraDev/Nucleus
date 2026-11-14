@@ -25,6 +25,8 @@ import org.spongepowered.api.event.message.PlayerChatEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.Optional;
 
 public class StaffChatMessageChannel implements IChatMessageFormatterService.Channel, IReloadableService.Reloadable {
 
@@ -81,9 +83,8 @@ public class StaffChatMessageChannel implements IChatMessageFormatterService.Cha
     }
 
     @Override
-    public void formatMessageEvent(final Audience audience, final PlayerChatEvent event) {
-        event.setAudience(this.receivers());
-        event.setMessage(this.formatMessage(audience, event.message()));
+    public Optional<Predicate<ServerPlayer>> recipientFilter() {
+        return Optional.of(this::test);
     }
 
     @Override

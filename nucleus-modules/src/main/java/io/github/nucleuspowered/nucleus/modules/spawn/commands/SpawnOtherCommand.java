@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
 import io.github.nucleuspowered.nucleus.modules.spawn.SpawnPermissions;
@@ -60,7 +61,7 @@ public class SpawnOtherCommand implements ICommandExecutor, IReloadableService.R
         final User target = Sponge.server().userManager().loadOrCreate(context.requireOne(NucleusParameters.ONE_USER)).join();
         final ServerWorld world = context.getWorldPropertiesOrFromSelfOptional(NucleusParameters.ONLINE_WORLD_OPTIONAL.key())
             .orElseGet(() -> this.gsc.isOnSpawnCommand() ? this.gsc.getWorld().get() :
-                    Sponge.server().worldManager().defaultWorld());
+                    Util.defaultWorld());
 
         final Tuple<ServerLocation, Vector3d> worldTransform = SpawnHelper.getSpawn(world, target.player().orElse(null), context);
 

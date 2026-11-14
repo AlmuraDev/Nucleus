@@ -148,7 +148,7 @@ public class SingleKit implements Kit {
         final List<Inventory> slots = new ArrayList<>(inventory.slots());
         final List<ItemStackSnapshot> stacks = slots.stream()
                 .filter(x -> !x.peek().isEmpty())
-                .map(x -> x.peek().createSnapshot()).collect(Collectors.toList());
+                .map(x -> x.peek().asImmutable()).collect(Collectors.toList());
 
         // Add all the stacks into the kit list.
         return this.setStacks(stacks);

@@ -29,11 +29,19 @@ public class ReloadableService implements IReloadableService {
 
     @Override public void fireReloadables(final INucleusServiceCollection serviceCollection) {
         for (final Reloadable reloadable : this.earlyReloadables) {
-            reloadable.onReload(serviceCollection);
+            ReloadableService.reload(reloadable, serviceCollection);
         }
 
         for (final Reloadable reloadable1 : this.reloadables) {
-            reloadable1.onReload(serviceCollection);
+            ReloadableService.reload(reloadable1, serviceCollection);
+        }
+    }
+
+    private static void reload(final Reloadable reloadable, final INucleusServiceCollection serviceCollection) {
+        try {
+            reloadable.onReload(serviceCollection);
+        } catch (final Exception | LinkageError e) {
+            serviceCollection.logger().error("Could not reload {}", reloadable.getClass().getName(), e);
         }
     }
 

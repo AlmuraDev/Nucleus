@@ -5,7 +5,6 @@
 package io.github.nucleuspowered.nucleus.core.module;
 
 import com.google.inject.Injector;
-import org.jetbrains.annotations.NotNull;
 
 public class ModuleContainer implements Comparable<ModuleContainer> {
 
@@ -46,7 +45,7 @@ public class ModuleContainer implements Comparable<ModuleContainer> {
     }
 
     @Override
-    public int compareTo(@NotNull ModuleContainer o) {
+    public int compareTo(ModuleContainer o) {
         return this.id.compareTo(o.id);
     }
 

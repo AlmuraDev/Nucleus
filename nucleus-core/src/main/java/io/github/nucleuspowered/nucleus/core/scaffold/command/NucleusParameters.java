@@ -4,6 +4,11 @@
  */
 package io.github.nucleuspowered.nucleus.core.scaffold.command;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import org.spongepowered.api.registry.DefaultedRegistryReference;
+import org.spongepowered.api.entity.living.player.gamemode.GameModes;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.AudienceValueParameter;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.OfflineWorldParameter;
 import io.leangen.geantyref.TypeToken;
@@ -174,6 +179,32 @@ public final class NucleusParameters {
                     .<Either<SystemSubject, ServerPlayer>>map(Either::left)
                     .orElseGet(() -> Either.right(context.requireOne(NucleusParameters.ONE_PLAYER)));
         }
+    }
+
+
+    /**
+     * A game mode argument that takes what players type: {@code 0}-{@code 3}, {@code s}/{@code c}/{@code a}/{@code sp},
+     * the names, or the namespaced keys. Game modes are registered as {@code sponge:creative} etc. in API 21, so a plain
+     * registry parser with the {@code minecraft} namespace accepted none of these.
+     */
+    public static Parameter.Value.Builder<GameMode> gameMode(final String key) {
+        final VariableValueParameters.StaticChoicesBuilder<GameMode> choices = VariableValueParameters.staticChoicesBuilder(GameMode.class)
+                .showInUsage(false);
+        NucleusParameters.addGameMode(choices, GameModes.SURVIVAL, "survival", "s", "0");
+        NucleusParameters.addGameMode(choices, GameModes.CREATIVE, "creative", "c", "1");
+        NucleusParameters.addGameMode(choices, GameModes.ADVENTURE, "adventure", "a", "2");
+        NucleusParameters.addGameMode(choices, GameModes.SPECTATOR, "spectator", "sp", "3");
+        return Parameter.builder(GameMode.class).key(key).addParser(choices.build());
+    }
+
+    private static void addGameMode(final VariableValueParameters.StaticChoicesBuilder<GameMode> choices,
+            final DefaultedRegistryReference<GameMode> mode, final String name, final String... aliases) {
+        final List<String> all = new ArrayList<>();
+        all.add(name);
+        all.add("minecraft:" + name);
+        all.add("sponge:" + name);
+        all.addAll(Arrays.asList(aliases));
+        choices.addChoices(all, mode);
     }
 
 }

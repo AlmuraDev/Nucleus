@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 import org.spongepowered.api.world.border.WorldBorder;
 
+import org.spongepowered.api.util.Ticks;
 import java.time.Duration;
 import java.util.Arrays;
 
@@ -82,7 +83,7 @@ public class UtilTests {
                     return 0;
                 }
 
-                @Override public Duration timeUntilTargetDiameter() {
+                @Override public Ticks timeUntilTargetDiameter() {
                     return null;
                 }
 
@@ -94,7 +95,7 @@ public class UtilTests {
                     return 0;
                 }
 
-                @Override public Duration warningTime() {
+                @Override public Ticks warningTime() {
                     return null;
                 }
 

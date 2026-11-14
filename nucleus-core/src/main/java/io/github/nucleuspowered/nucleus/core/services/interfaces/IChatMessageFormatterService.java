@@ -11,11 +11,12 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.PlayerChatFormatter;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.message.PlayerChatEvent;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 @ImplementedBy(ChatMessageFormatterService.class)
 public interface IChatMessageFormatterService {
@@ -46,8 +47,16 @@ public interface IChatMessageFormatterService {
 
         Component formatMessage(Audience source, Component body);
 
-        default void formatMessageEvent(final Audience audience, final PlayerChatEvent event) {
-            event.setAudience(this.receivers());
+        /**
+         * Which players receive a chat message sent on this channel, or empty for everyone. Chat can no longer be
+         * redirected to an arbitrary audience, only filtered, so this must agree with {@link #receivers()}.
+         */
+        default Optional<Predicate<ServerPlayer>> recipientFilter() {
+            return Optional.empty();
+        }
+
+        default void formatMessageEvent(final Audience audience, final PlayerChatEvent.Submit event) {
+            this.recipientFilter().ifPresent(event::setFilter);
             event.setMessage(this.formatMessage(audience, event.message()));
         }
 

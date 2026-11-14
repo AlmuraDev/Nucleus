@@ -116,7 +116,7 @@ public class RepairCommand implements ICommandExecutor, IReloadableService.Reloa
                 final ItemStack stack = pl.itemInHand(HandTypes.MAIN_HAND);
                 final RepairResult result = this.repairStack(stack, checkRestrictions);
                 resultCount.compute(result.type, (t, i) -> i += 1);
-                lastItem.put(result.type, result.stack.createSnapshot());
+                lastItem.put(result.type, result.stack.asImmutable());
                 if (result.isSuccessful()) {
                     pl.setItemInHand(HandTypes.MAIN_HAND, result.stack);
                 }
@@ -127,7 +127,7 @@ public class RepairCommand implements ICommandExecutor, IReloadableService.Reloa
                 final ItemStack stack = pl.itemInHand(HandTypes.OFF_HAND);
                 final RepairResult result = this.repairStack(stack, checkRestrictions);
                 resultCount.compute(result.type, (t, i) -> i += 1);
-                lastItem.put(result.type, result.stack.createSnapshot());
+                lastItem.put(result.type, result.stack.asImmutable());
                 if (result.isSuccessful()) {
                     pl.setItemInHand(HandTypes.OFF_HAND, result.stack);
                 }
@@ -246,7 +246,7 @@ public class RepairCommand implements ICommandExecutor, IReloadableService.Reloa
             if (!stack.isEmpty()) {
                 final RepairResult result = this.repairStack(stack, checkRestrictions);
                 resultCount.compute(result.type, (t, i) -> i += 1);
-                lastItem.put(result.type, result.stack.createSnapshot());
+                lastItem.put(result.type, result.stack.asImmutable());
                 if (result.isSuccessful()) {
                     slot.offer(result.stack);
                 }

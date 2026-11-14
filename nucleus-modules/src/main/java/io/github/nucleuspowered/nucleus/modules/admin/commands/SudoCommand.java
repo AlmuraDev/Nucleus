@@ -69,9 +69,7 @@ public class SudoCommand implements ICommandExecutor, IReloadableService.Reloada
                 frame.pushCause(pl); // on top
                 frame.addContext(EventContextKeys.SIMULATED_PLAYER, pl.profile());
 
-                if (pl.simulateChat(rawMessage, frame.currentCause()).isCancelled()) {
-                    return context.errorResult("command.sudo.chatcancelled");
-                }
+                pl.simulateChat(rawMessage, frame.currentCause());
             }
 
             return context.successResult();

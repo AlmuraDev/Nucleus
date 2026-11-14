@@ -58,12 +58,12 @@ public class MuteListener implements IReloadableService.Reloadable, ListenerBase
     }
 
     @Listener
-    public void onPlayerLogout(final ServerSideConnectionEvent.Disconnect event) {
+    public void onPlayerLogout(final ServerSideConnectionEvent.Leave event) {
         this.handler.clearCacheFor(event.player().uniqueId());
     }
 
     @Listener(order = Order.LATE)
-    public void onChat(final PlayerChatEvent event, @Root final ServerPlayer player) {
+    public void onChat(final PlayerChatEvent.Submit event, @Root final ServerPlayer player) {
         boolean cancel = false;
         if (this.isMutedNotify(player)) {
             Sponge.systemSubject().sendMessage(player,

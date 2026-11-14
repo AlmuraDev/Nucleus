@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.afk.services;
 
+import org.spongepowered.api.effect.VanishState;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
@@ -258,7 +259,7 @@ public class AFKHandler implements NucleusAFKService, IReloadableService.Reloada
     }
 
     private Tuples.NullableTuple<Component, Audience> getAFKMessage(final Player player, final boolean isAfk) {
-        if (this.config.isBroadcastAfkOnVanish() || !player.get(Keys.VANISH).orElse(false)) {
+        if (this.config.isBroadcastAfkOnVanish() || !player.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false)) {
             final NucleusTextTemplate template = isAfk ? this.afkMessage : this.returnAfkMessage;
             return Tuples.ofNullable(template.getForObject(player), Audience.audience(Sponge.server()));
         } else {

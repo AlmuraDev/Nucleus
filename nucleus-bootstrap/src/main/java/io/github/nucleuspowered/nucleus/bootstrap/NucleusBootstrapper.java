@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.bootstrap;
 
+import java.lang.invoke.MethodHandles;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.github.nucleuspowered.nucleus.bootstrap.error.InitialisationNucleusErrorHandler;
@@ -128,7 +129,7 @@ public class NucleusBootstrapper {
                         new NucleusCore(this.pluginContainer, this.configDirectory, this.logger, this.injector, new NucleusModuleProvider(),
                                 pluginInfo);
                 core.init();
-                Sponge.eventManager().registerListeners(this.pluginContainer, core);
+                Sponge.eventManager().registerListeners(this.pluginContainer, core, MethodHandles.lookup());
                 this.logger.info("Nucleus has completed initialisation successfully. Awaiting Sponge lifecycle events.");
                 return;
             } catch (final NucleusConfigException e) {

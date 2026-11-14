@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.vanish.commands;
 
+import org.spongepowered.api.effect.VanishState;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishPermissions;
 import io.github.nucleuspowered.nucleus.modules.vanish.services.VanishService;
@@ -78,12 +79,12 @@ public class VanishCommand implements ICommandExecutor {
     }
 
     private ICommandResult onPlayer(final ICommandContext context, final ServerPlayer playerToVanish) throws CommandException {
-        if (playerToVanish.get(Keys.GAME_MODE).orElseGet(GameModes.NOT_SET).equals(GameModes.SPECTATOR.get())) {
+        if (playerToVanish.get(Keys.GAME_MODE).orElseGet(GameModes.SURVIVAL).equals(GameModes.SPECTATOR.get())) {
             return context.errorResult("command.vanish.fail");
         }
 
         // If we don't specify whether to vanish, toggle
-        final boolean toVanish = context.getOne(NucleusParameters.OPTIONAL_ONE_TRUE_FALSE).orElse(!playerToVanish.get(Keys.VANISH).orElse(false));
+        final boolean toVanish = context.getOne(NucleusParameters.OPTIONAL_ONE_TRUE_FALSE).orElse(!playerToVanish.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false));
         final VanishService service = context.getServiceCollection().getServiceUnchecked(VanishService.class);
         if (toVanish) {
             service.vanishPlayer(playerToVanish.user());

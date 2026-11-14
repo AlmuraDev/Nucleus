@@ -4,6 +4,11 @@
  */
 package io.github.nucleuspowered.nucleus.core;
 
+import java.util.Locale;
+import org.spongepowered.api.ResourceKey;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
+import org.spongepowered.api.network.ServerConnectionState;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import net.kyori.adventure.audience.Audience;
@@ -21,6 +26,7 @@ import org.spongepowered.api.item.inventory.query.QueryTypes;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.util.MinecraftDayTime;
+import org.spongepowered.api.world.DefaultWorldKeys;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
@@ -170,12 +176,56 @@ public final class Util {
         return dropItemOnFloorAtLocation(itemStackSnapshotToDrop, location.world(), location.position());
     }
 
+    /**
+     * Lookup for {@code EventManager#registerListeners(PluginContainer, Object, Lookup)}. Sponge skips listeners in a
+     * named module (how SpongeNeo loads plugins) when it has no lookup for them, with only a "No lookup found" warning.
+     */
+    public static final MethodHandles.Lookup LISTENER_LOOKUP = MethodHandles.lookup();
+
+    /**
+     * Copies one of Nucleus' bundled default files ({@code data/plugin-nucleus/<name>} in the jar) to {@code target}.
+     *
+     * @return false if there is no such bundled file
+     */
+    public static boolean copyBundledFile(final String name, final Path target) throws IOException {
+        try (final InputStream stream = Util.class.getResourceAsStream("/data/plugin-nucleus/" + name)) {
+            if (stream == null) {
+                return false;
+            }
+            Files.copy(stream, target);
+            return true;
+        }
+    }
+
+    /**
+     * The part of a world's key used in per-world permissions ({@code nucleus.worlds.<world>} and the like): the key's
+     * value, lower case, e.g. {@code orilla} for {@code sponge:orilla}. The full key's ':' can't be passed to NeoForge
+     * permission handlers such as LuckPerms, and the value matches the world-name nodes granted on older servers.
+     */
+    public static String worldPermissionSuffix(final ResourceKey worldKey) {
+        return worldKey.value().toLowerCase(Locale.ROOT);
+    }
+
+    /** The player's ping in milliseconds, or 0 when it is not known (for example while still logging in). */
+    public static int latency(final ServerPlayer player) {
+        return player.connection().state()
+                .filter(ServerConnectionState.Game.class::isInstance)
+                .map(state -> ((ServerConnectionState.Game) state).latency())
+                .orElse(0);
+    }
+
+    /** The server's default world. {@code WorldManager#defaultWorld()} was removed after API 8. */
+    public static ServerWorld defaultWorld() {
+        return Sponge.server().worldManager().world(DefaultWorldKeys.DEFAULT)
+                .orElseThrow(() -> new IllegalStateException("The default world is not loaded"));
+    }
+
     public static ItemStack dropItemOnFloorAtLocation(final ItemStackSnapshot itemStackSnapshotToDrop, final ServerWorld world,
             final Vector3d position) {
         final Entity entityToDrop = world.createEntity(EntityTypes.ITEM.get(), position);
         entityToDrop.offer(Keys.ITEM_STACK_SNAPSHOT, itemStackSnapshotToDrop);
         world.spawnEntity(entityToDrop);
-        return itemStackSnapshotToDrop.createStack();
+        return itemStackSnapshotToDrop.asMutableCopy();
     }
 
     public static Inventory getStandardInventory(final Carrier player) {

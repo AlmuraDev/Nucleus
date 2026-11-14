@@ -29,7 +29,7 @@ public class ChatChannelListener implements ListenerBase {
     }
 
     @Listener(order = Order.LATE)
-    public void onChatMessageLast(final PlayerChatEvent chat, @Root final SystemSubject source) {
+    public void onChatMessageLast(final PlayerChatEvent.Submit chat, @Root final SystemSubject source) {
         final Optional<IChatMessageFormatterService.Channel> channelOptional =
                 this.chatMessageFormatter.getNucleusChannel(Util.CONSOLE_FAKE_UUID);
         channelOptional.ifPresent(x -> this.onChatChannel(chat, x));
@@ -37,14 +37,14 @@ public class ChatChannelListener implements ListenerBase {
 
     // Used to perform any transformations so that they can be caught by other plugins.
     @Listener(order = Order.LATE)
-    public void onChatMessageLast(final PlayerChatEvent chat, @Root final Player source) {
+    public void onChatMessageLast(final PlayerChatEvent.Submit chat, @Root final Player source) {
         final Optional<IChatMessageFormatterService.Channel> channelOptional =
                 this.chatMessageFormatter.getNucleusChannel(source.uniqueId());
         channelOptional.ifPresent(x -> this.onChatChannel(chat, x));
 
     }
 
-    private void onChatChannel(final PlayerChatEvent chat, final IChatMessageFormatterService.Channel channel) {
+    private void onChatChannel(final PlayerChatEvent.Submit chat, final IChatMessageFormatterService.Channel channel) {
         if (channel.willFormat()) {
             channel.formatMessageEvent(chat.cause().first(ServerPlayer.class).get(), chat);
         }

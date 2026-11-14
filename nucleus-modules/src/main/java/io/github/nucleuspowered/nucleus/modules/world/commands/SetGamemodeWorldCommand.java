@@ -28,7 +28,7 @@ import org.spongepowered.api.world.server.ServerWorld;
 public class SetGamemodeWorldCommand implements ICommandExecutor {
 
     private final Parameter.Value<GameMode> gameMode =
-            Parameter.registryElement(TypeTokens.GAME_MODE, RegistryTypes.GAME_MODE).key("gamemode").build();
+            NucleusParameters.gameMode("gamemode").build();
 
     @Override
     public Parameter[] parameters(final INucleusServiceCollection serviceCollection) {

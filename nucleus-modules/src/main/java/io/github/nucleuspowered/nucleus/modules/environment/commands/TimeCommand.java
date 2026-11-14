@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.environment.commands;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.modules.environment.EnvironmentPermissions;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
@@ -43,7 +44,7 @@ public class TimeCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) {
         final ServerWorld pr = context.getWorldPropertiesOrFromSelfOptional(NucleusParameters.ONLINE_WORLD_OPTIONAL.key())
-                .orElseGet(() -> Sponge.server().worldManager().defaultWorld());
+                .orElseGet(() -> Util.defaultWorld());
 
         context.sendMessage("command.time", pr.key().asString(), context.getTimeString(pr.properties().dayTime().asInGameDuration()));
         return context.successResult();

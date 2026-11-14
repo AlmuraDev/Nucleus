@@ -56,7 +56,7 @@ public class FreezePlayerListener implements ListenerBase {
     }
 
     @Listener
-    public void onPlayerDisconnect(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer player) {
+    public void onPlayerDisconnect(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer player) {
         this.service.invalidate(player.uniqueId());
     }
 

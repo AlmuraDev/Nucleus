@@ -17,7 +17,7 @@ import org.spongepowered.api.event.network.ServerSideConnectionEvent;
 public class ConnectionMessagesForceListener implements ListenerBase.Conditional {
 
     @Listener(order = Order.LAST)
-    @Include({ServerSideConnectionEvent.Disconnect.class, ServerSideConnectionEvent.Join.class})
+    @Include({ServerSideConnectionEvent.Leave.class, ServerSideConnectionEvent.Join.class})
     public void onPlayerLogin(final AudienceMessageEvent joinEvent) {
         joinEvent.setAudience(Sponge.server());
     }

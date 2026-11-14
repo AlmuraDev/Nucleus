@@ -82,8 +82,8 @@ public final class TeleportModule implements IModule.Configurable<TeleportConfig
 
     @Listener
     public void registerUserPreferenceKey(final RegisterRegistryValueEvent.GameScoped event) {
-        event.registry(this.userPreferenceService.getRegistryResourceType()).register(NucleusKeysProvider.TELEPORT_TARGETABLE_KEY,
-                TeleportKeys.TELEPORT_TOGGLE);
+        event.registry(this.userPreferenceService.getRegistryResourceType(), step -> step.register(NucleusKeysProvider.TELEPORT_TARGETABLE_KEY,
+                TeleportKeys.TELEPORT_TOGGLE));
     }
 
 }

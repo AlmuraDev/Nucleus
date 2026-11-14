@@ -219,17 +219,16 @@ public final class NucleusCore {
 
     @Listener
     public void onGlobalRegistryValueRegistrationEvent(final RegisterRegistryValueEvent.GameScoped event) {
-        event.registry(RegistryTypes.TELEPORT_HELPER_FILTER)
+        event.registry(RegistryTypes.TELEPORT_HELPER_FILTER, step -> step
                 .register(NoCheckFilter.KEY, new NoCheckFilter())
-                .register(WallCheckFilter.KEY, new WallCheckFilter());
+                .register(WallCheckFilter.KEY, new WallCheckFilter()));
 
-        final RegisterRegistryValueEvent.RegistryStep<PlaceholderParser> placeholderParserRegistryStep =
-                event.registry(RegistryTypes.PLACEHOLDER_PARSER);
-        this.serviceCollection.placeholderService().getNucleusParsers().forEach((key, value) -> {
-            if (!value.isDuplicate()) {
-                placeholderParserRegistryStep.register(ResourceKey.of(this.pluginContainer, key), value.getParser());
-            }
-        });
+        event.registry(RegistryTypes.PLACEHOLDER_PARSER, (final RegisterRegistryValueEvent.RegistryStep<PlaceholderParser> step) ->
+                this.serviceCollection.placeholderService().getNucleusParsers().forEach((key, value) -> {
+                    if (!value.isDuplicate()) {
+                        step.register(ResourceKey.of(this.pluginContainer, key), value.getParser());
+                    }
+                }));
         this.serviceCollection.logger().info("Registered placeholder parsers.");
 
         final NucleusRegisterPreferenceKeyEvent registerPreferenceKeyEvent = new RegisterPreferenceKeyEvent(
@@ -369,7 +368,7 @@ public final class NucleusCore {
             final IModule module = tuple.second();
             final ModuleContainer container = tuple.first();
             // listeners
-            Sponge.eventManager().registerListeners(this.pluginContainer, module);
+            Sponge.eventManager().registerListeners(this.pluginContainer, module, Util.LISTENER_LOOKUP);
 
             for (final Class<? extends ListenerBase> listenerClass :
                     Objects.requireNonNull(module.getListeners(), "Module " + tuple.first().getId() + " has a null listener call.")) {
@@ -378,7 +377,7 @@ public final class NucleusCore {
                     this.serviceCollection.reloadableService().registerReloadable(new ListenerReloadableWrapper((ListenerBase.Conditional) listener));
                 }
 
-                Sponge.eventManager().registerListeners(this.pluginContainer, listener);
+                Sponge.eventManager().registerListeners(this.pluginContainer, listener, Util.LISTENER_LOOKUP);
                 if (listener instanceof IReloadableService.Reloadable) {
                     this.serviceCollection.reloadableService().registerReloadable((IReloadableService.Reloadable) listener);
                 }

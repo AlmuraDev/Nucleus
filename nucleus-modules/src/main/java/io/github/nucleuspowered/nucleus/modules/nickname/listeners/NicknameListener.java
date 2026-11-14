@@ -40,7 +40,7 @@ public class NicknameListener implements ListenerBase {
     }
 
     @Listener(order = Order.LAST)
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer player) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer player) {
         this.nicknameService.removeFromCache(player.uniqueId());
     }
 

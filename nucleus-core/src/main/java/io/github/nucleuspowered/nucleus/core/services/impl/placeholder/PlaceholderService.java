@@ -246,7 +246,7 @@ public class PlaceholderService implements IPlaceholderService, IInitService {
         return placeholder.associatedObject()
                 .filter(x -> x instanceof Locatable)
                 .map(x -> ((Locatable) x).serverLocation().world().properties())
-                .orElseGet(Sponge.server().worldManager().defaultWorld()::properties);
+                .orElseGet(Util.defaultWorld()::properties);
     }
 
 }

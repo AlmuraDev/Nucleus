@@ -53,7 +53,7 @@ public class HatCommand implements ICommandExecutor {
         pl.setHead(hand);
         final Component itemName = hand.type().asComponent();
 
-        final GameMode gameMode = pl.get(Keys.GAME_MODE).orElseGet(GameModes.NOT_SET);
+        final GameMode gameMode = pl.get(Keys.GAME_MODE).orElseGet(GameModes.SURVIVAL);
         if (gameMode != GameModes.CREATIVE.get()) {
             if (stack.quantity() > 1) {
                 stack.setQuantity(stack.quantity() - 1);

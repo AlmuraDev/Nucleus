@@ -128,7 +128,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
     @Override
     public Collection<ItemStack> getItemsForPlayer(final Kit kit, final UUID uuid) {
         final ServerPlayer serverPlayer = this.player(uuid);
-        final Collection<ItemStack> cis = kit.getStacks().stream().map(ItemStackSnapshot::createStack).collect(Collectors.toList());
+        final Collection<ItemStack> cis = kit.getStacks().stream().map(ItemStackSnapshot::asMutableCopy).collect(Collectors.toList());
         if (this.isProcessTokens) {
             this.processTokensInItemStacks(serverPlayer, cis);
         }
@@ -258,7 +258,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
                 } else {
                     final List<ItemStackSnapshot> slotList = new ArrayList<>();
                     for (final Slot slot : Util.getStandardInventory(player).slots()) {
-                        slotList.add(slot.peek().createSnapshot());
+                        slotList.add(slot.peek().asImmutable());
                     }
                     InventoryTransactionResult inventoryTransactionResult = EMPTY_ITR;
                     KitRedeemResultImpl ex = null;
@@ -276,7 +276,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
                                 final Inventory i = slot.next();
                                 i.clear();
                                 if (!x.isEmpty()) {
-                                    i.offer(x.createStack());
+                                    i.offer(x.asMutableCopy());
                                 }
                             });
 
@@ -464,14 +464,14 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
     private Collection<ItemStackSnapshot> getItems(final Kit kit, final boolean replaceTokensInLore, final Player targetPlayer) {
         final Collection<ItemStack> toOffer = kit.getStacks().stream()
                 .filter(x -> !x.isEmpty())
-                .map(ItemStackSnapshot::createStack)
+                .map(ItemStackSnapshot::asMutableCopy)
                 .collect(Collectors.toList());
 
         if (replaceTokensInLore) {
             this.processTokensInItemStacks(targetPlayer, toOffer);
         }
 
-        return toOffer.stream().map(ItemStack::createSnapshot).collect(Collectors.toList());
+        return toOffer.stream().map(ItemStack::asImmutable).collect(Collectors.toList());
     }
 
     /**
@@ -489,7 +489,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
 
         final Collection<ItemStack> toOffer = itemStacks.stream()
                 .filter(x -> !x.isEmpty())
-                .map(ItemStackSnapshot::createStack)
+                .map(ItemStackSnapshot::asMutableCopy)
                 .collect(Collectors.toList());
 
         boolean success = false;
@@ -497,7 +497,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
             final InventoryTransactionResult itr = target.offer(stack);
             success = success || itr.type() == InventoryTransactionResult.Type.SUCCESS;
             for (final ItemStackSnapshot iss : itr.rejectedItems()) {
-                resultBuilder.reject(iss.createStack());
+                resultBuilder.reject(iss.asMutableCopy());
             }
 
         }

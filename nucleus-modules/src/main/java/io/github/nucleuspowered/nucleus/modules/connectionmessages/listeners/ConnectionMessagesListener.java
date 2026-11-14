@@ -84,7 +84,7 @@ public class ConnectionMessagesListener implements IReloadableService.Reloadable
     }
 
     @Listener
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect leaveEvent, @Getter("player") final ServerPlayer pl) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave leaveEvent, @Getter("player") final ServerPlayer pl) {
         if (leaveEvent.message() != Component.empty() || (this.cmc.isDisableWithPermission() &&
                 this.permissionService.hasPermission(pl, ConnectionMessagesPermissions.CONNECTIONMESSSAGES_DISABLE))) {
             leaveEvent.setMessage(Component.empty());

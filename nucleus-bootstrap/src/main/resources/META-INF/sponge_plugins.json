@@ -1,0 +1,35 @@
+{
+    "loader": {
+        "name": "java_plain",
+        "version": "1.0"
+    },
+    "license": "MIT",
+    "plugins": [
+        {
+            "id": "nucleus",
+            "name": "Nucleus",
+            "version": "${version}",
+            "entrypoint": "io.github.nucleuspowered.nucleus.bootstrap.NucleusBootstrapper",
+            "description": "${description}",
+            "links": {
+                "homepage": "https://nucleuspowered.org",
+                "source": "https://github.com/NucleusPowered/Nucleus",
+                "issues": "https://github.com/NucleusPowered/Nucleus/issues"
+            },
+            "contributors": [
+                {
+                    "name": "dualspiral",
+                    "description": "Lead Developer"
+                }
+            ],
+            "dependencies": [
+                {
+                    "id": "spongeapi",
+                    "version": "${spongeApiVersion}",
+                    "load-order": "after",
+                    "optional": false
+                }
+            ]
+        }
+    ]
+}

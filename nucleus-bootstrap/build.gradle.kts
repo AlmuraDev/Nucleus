@@ -1,70 +1,50 @@
-plugins {
-    `java-library`
-    eclipse
-    id("net.kyori.blossom")
-}
+import org.apache.tools.ant.filters.ReplaceTokens
 
-repositories {
-    mavenCentral()
-    maven("https://repo-new.spongepowered.org/repository/maven-public")
-}
-
-sourceSets {
-    main
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+val spongeApiVersion: String by rootProject
+val declaredApiVersion: String by rootProject
+val validVersions: String? by rootProject
 
 dependencies {
     api(project(":nucleus-core"))
     api(project(":nucleus-modules"))
-
-    val dep = "org.spongepowered:spongeapi:${rootProject.properties["spongeApiVersion"]}"
-    annotationProcessor(dep)
-    implementation(dep) {
-        exclude("org.spongepowered", "configurate-core")
-        exclude("org.spongepowered", "configurate-gson")
-        exclude("org.spongepowered", "configurate-hocon")
-        exclude("org.spongepowered", "configurate-yaml")
-    }
-
-    testImplementation("org.mockito:mockito-all:1.10.19")
-    testImplementation("org.powermock:powermock-module-junit4:1.6.4")
-    testImplementation("org.powermock:powermock-api-mockito:1.6.4")
-    testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0")
-    testImplementation("junit", "junit", "4.12")
+    annotationProcessor("org.spongepowered:spongeapi:$spongeApiVersion")
 }
 
-tasks {
+val gitHash: Provider<String> = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+    isIgnoreExitValue = true
+}.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }
 
-    blossomSourceReplacementJava {
-        dependsOn(rootProject.tasks["gitHash"])
-    }
-
-    build {
-        dependsOn(":nucleus-core:build")
-        dependsOn(":nucleus-modules:build")
-    }
-
+// NucleusPluginInfo holds @token@ placeholders for the build details
+val generatePluginInfo by tasks.registering(Copy::class) {
+    val tokens = mapOf(
+        "name" to rootProject.name,
+        "version" to rootProject.version.toString(),
+        "description" to (rootProject.findProperty("description")?.toString() ?: ""),
+        "url" to (rootProject.findProperty("url")?.toString() ?: ""),
+        "gitHash" to gitHash.get(),
+        "spongeversion" to declaredApiVersion,
+        "validversions" to (validVersions ?: declaredApiVersion)
+    )
+    inputs.properties(tokens)
+    from("src/main/java-templates")
+    into(layout.buildDirectory.dir("generated/sources/pluginInfo"))
+    filter<ReplaceTokens>("tokens" to tokens)
 }
 
-blossom {
-    replaceTokenIn("src/main/java/io/github/nucleuspowered/nucleus/bootstrap/NucleusPluginInfo.java")
-    replaceToken("@name@", rootProject.name)
-    replaceToken("@version@", rootProject.version)
+sourceSets.main {
+    java.srcDir(generatePluginInfo)
+}
 
-    replaceToken("@description@", rootProject.properties["description"])
-    replaceToken("@url@", rootProject.properties["url"])
-    replaceToken("@gitHash@", rootProject.extra["gitHash"])
-
-    replaceToken("@spongeversion@", rootProject.properties["declaredApiVersion"]) //declaredApiVersion
-    val r = rootProject.properties["validVersions"]
-    if (r == null) {
-        replaceToken("@validversions@", rootProject.properties["declaredApiVersion"]) //validVersions
-    } else {
-        replaceToken("@validversions@", r) //validVersions
+tasks.processResources {
+    val props = mapOf(
+        "version" to rootProject.version.toString(),
+        "description" to (rootProject.findProperty("description")?.toString() ?: ""),
+        // A bare version is a soft requirement in plugin-meta, so this also accepts the server's 21.0.0-RC builds
+        "spongeApiVersion" to declaredApiVersion.substringBefore('-') + ".0"
+    )
+    inputs.properties(props)
+    filesMatching("META-INF/sponge_plugins.json") {
+        expand(props)
     }
 }

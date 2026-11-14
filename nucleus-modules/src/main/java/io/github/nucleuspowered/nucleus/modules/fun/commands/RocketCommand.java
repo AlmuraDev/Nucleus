@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.fun.commands;
 
+import org.spongepowered.api.world.explosion.ExplosionBlockInteractions;
 import net.kyori.adventure.sound.Sound;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
@@ -86,7 +87,7 @@ public class RocketCommand implements ICommandExecutor {
                     .location(target.serverLocation())
                     .canCauseFire(false)
                     .location(target.serverLocation())
-                    .shouldBreakBlocks(false)
+                    .blockInteraction(ExplosionBlockInteractions.KEEP.get())
                     .shouldPlaySmoke(true)
                     .shouldDamageEntities(false)
                     .radius((float) v * 2.0f)

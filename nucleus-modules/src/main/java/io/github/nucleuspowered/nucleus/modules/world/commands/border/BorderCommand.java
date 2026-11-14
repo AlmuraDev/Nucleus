@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.world.commands.border;
 
+import org.spongepowered.api.Sponge;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
@@ -56,7 +57,7 @@ public class BorderCommand implements ICommandExecutor {
 
         if (currentDiameter != targetDiameter) {
             worldBorderInfo.add(context.getMessage("command.world.border.targetdiameter", targetDiameter,
-                    String.valueOf(worldBorder.timeUntilTargetDiameter().getSeconds())));
+                    String.valueOf(worldBorder.timeUntilTargetDiameter().expectedDuration(Sponge.server()).getSeconds())));
         }
 
         Util.getPaginationBuilder(context.audience())

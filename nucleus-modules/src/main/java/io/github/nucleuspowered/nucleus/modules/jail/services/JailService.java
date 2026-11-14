@@ -205,7 +205,7 @@ public final class JailService implements NucleusJailService, IReloadableService
             final ServerWorld world = player.world();
             return ServerLocation.of(world.key(), world.properties().spawnPosition());
         }, u -> {
-            final ServerWorld def = Sponge.server().worldManager().defaultWorld();
+            final ServerWorld def = Util.defaultWorld();
             if (u == null) {
                 return ServerLocation.of(def.key(), def.properties().spawnPosition());
             }
@@ -222,7 +222,7 @@ public final class JailService implements NucleusJailService, IReloadableService
                     TeleportScanners.NO_SCAN.get(),
                     TeleportHelperFilters.DEFAULT.get()
             ).orElseGet(() -> {
-                final ServerWorld def = Sponge.server().worldManager().defaultWorld();
+                final ServerWorld def = Util.defaultWorld();
                 return ServerLocation.of(def.key(), def.properties().spawnPosition());
             });
 

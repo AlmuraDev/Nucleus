@@ -49,7 +49,7 @@ public class WarmupListener implements IReloadableService.Reloadable, ListenerBa
     }
 
     @Listener(order = Order.LAST)
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect event) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave event) {
         this.cancelWarmup(event.player());
     }
 

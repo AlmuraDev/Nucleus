@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.startuperror;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.IPluginInfo;
 import io.github.nucleuspowered.nucleus.core.util.PrettyPrinter;
 import org.apache.logging.log4j.Level;
@@ -46,7 +47,7 @@ public class NucleusErrorHandler {
         Sponge.asyncScheduler().tasks(this.pluginContainer).forEach(ScheduledTask::cancel);
 
         // Re-register this to warn people about the error.
-        Sponge.eventManager().registerListeners(this.pluginContainer, this);
+        Sponge.eventManager().registerListeners(this.pluginContainer, this, Util.LISTENER_LOOKUP);
     }
 
     @Listener

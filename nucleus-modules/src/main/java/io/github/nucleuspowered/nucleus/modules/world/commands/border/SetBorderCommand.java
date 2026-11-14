@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.world.commands.border;
 
+import org.spongepowered.api.util.Ticks;
+import org.spongepowered.api.Sponge;
 import io.github.nucleuspowered.nucleus.modules.world.WorldPermissions;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
@@ -82,7 +84,7 @@ public class SetBorderCommand implements ICommandExecutor {
                     String.valueOf(dia));
         } else {
             border.targetDiameter(dia);
-            border.timeToTargetDiameter(delay);
+            border.timeToTargetDiameter(Ticks.ofWallClockTime(Sponge.server(), delay.toMillis(), java.time.temporal.ChronoUnit.MILLIS));
             context.sendMessage("command.world.setborder.setdelay",
                     wp.key().asString(),
                     String.valueOf(x),

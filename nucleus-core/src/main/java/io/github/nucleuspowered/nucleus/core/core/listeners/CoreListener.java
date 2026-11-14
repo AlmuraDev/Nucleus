@@ -199,7 +199,7 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
     }
 
     @Listener(order = Order.LAST)
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer player) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer player) {
         this.serviceCollection.storageManager().getUser(player.uniqueId()).thenAccept(x -> x.ifPresent(y -> this.onPlayerQuit(player, y)));
     }
 

@@ -29,7 +29,7 @@ public final class MessageListener implements ListenerBase {
     }
 
     @Listener(order = Order.LAST)
-    public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect event, @Getter("player") final ServerPlayer serverPlayer) {
+    public void onPlayerQuit(final ServerSideConnectionEvent.Leave event, @Getter("player") final ServerPlayer serverPlayer) {
         this.messageHandler.removePlayer(serverPlayer.uniqueId());
     }
 

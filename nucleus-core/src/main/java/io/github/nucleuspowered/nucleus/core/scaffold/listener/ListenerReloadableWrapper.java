@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.scaffold.listener;
 
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import org.spongepowered.api.Sponge;
@@ -20,7 +21,7 @@ public class ListenerReloadableWrapper implements IReloadableService.Reloadable 
     public void onReload(final INucleusServiceCollection serviceCollection) {
         Sponge.eventManager().unregisterListeners(this.listenerBase);
         if (this.listenerBase.shouldEnable(serviceCollection)) {
-            Sponge.eventManager().registerListeners(serviceCollection.pluginContainer(), this.listenerBase);
+            Sponge.eventManager().registerListeners(serviceCollection.pluginContainer(), this.listenerBase, Util.LISTENER_LOOKUP);
         }
 
     }

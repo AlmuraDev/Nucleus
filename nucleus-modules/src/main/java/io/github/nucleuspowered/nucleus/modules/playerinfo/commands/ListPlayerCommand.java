@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.playerinfo.commands;
 
+import org.spongepowered.api.effect.VanishState;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.module.afk.NucleusAFKService;
@@ -64,7 +65,7 @@ public class ListPlayerCommand implements ICommandExecutor, IReloadableService.R
 
         final Collection<ServerPlayer> players = Sponge.server().onlinePlayers();
         final long playerCount = players.size();
-        final long hiddenCount = players.stream().filter(x -> x.get(Keys.VANISH).orElse(false)).count();
+        final long hiddenCount = players.stream().filter(x -> x.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false)).count();
 
         final Component header;
         if (showVanished && hiddenCount > 0) {
@@ -175,7 +176,7 @@ public class ListPlayerCommand implements ICommandExecutor, IReloadableService.R
         final Component afk = context.getMessage("command.list.afk");
         final Component hidden = context.getMessage("command.list.hidden");
 
-        final List<Component> playerList = playersToList.stream().filter(x -> showVanished || !x.get(Keys.VANISH).orElse(false))
+        final List<Component> playerList = playersToList.stream().filter(x -> showVanished || !x.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false))
                 .sorted((x, y) -> x.name().compareToIgnoreCase(y.name())).map(x -> {
                     final TextComponent.Builder tb = Component.text();
                     boolean appendSpace = false;
@@ -184,7 +185,7 @@ public class ListPlayerCommand implements ICommandExecutor, IReloadableService.R
                         appendSpace = true;
                     }
 
-                    if (x.get(Keys.VANISH).orElse(false)) {
+                    if (x.get(Keys.VANISH_STATE).map(VanishState::invisible).orElse(false)) {
                         tb.append(hidden);
                         appendSpace = true;
                     }

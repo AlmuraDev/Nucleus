@@ -68,7 +68,7 @@ public class ItemInfoCommand implements ICommandExecutor {
         if (catalogTypeOptional.isPresent()) {
             is = catalogTypeOptional.get();
         } else if (context.is(ServerPlayer.class) && !context.requirePlayer().itemInHand(HandTypes.MAIN_HAND).isEmpty()) {
-            is = context.getIfPlayer().itemInHand(HandTypes.MAIN_HAND).createSnapshot();
+            is = context.getIfPlayer().itemInHand(HandTypes.MAIN_HAND).asImmutable();
         } else {
             return context.errorResult("command.iteminfo.none");
         }

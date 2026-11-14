@@ -62,7 +62,7 @@ public final class TextFileController {
     /**
      * The internal {@link ResourcePath} that represents the default file.
      */
-    @Nullable private final Supplier<ResourcePath> resourcePath;
+    @Nullable private final String resourcePath;
 
     /**
      * Holds the file location.
@@ -93,15 +93,12 @@ public final class TextFileController {
     public TextFileController(
             final PluginContainer pluginContainer,
             final INucleusTextTemplateFactory textTemplateFactory, @Nullable final String path, final Path fileLocation) {
-        this(pluginContainer, textTemplateFactory, path == null ? null : () -> {
-            final Pack pluginPack = Sponge.server().packRepository().pack(pluginContainer);
-            return ResourcePath.of(pluginPack.id(), path);
-        }, fileLocation, false);
+        this(pluginContainer, textTemplateFactory, path, fileLocation, false);
     }
 
     private TextFileController(
             final PluginContainer pluginContainer,
-            final INucleusTextTemplateFactory textTemplateFactory, @Nullable final Supplier<ResourcePath> resourcePath, final Path fileLocation,
+            final INucleusTextTemplateFactory textTemplateFactory, @Nullable final String resourcePath, final Path fileLocation,
             final boolean getTitle) {
         this.textTemplateFactory = textTemplateFactory;
         this.resourcePath = resourcePath;
@@ -117,14 +114,8 @@ public final class TextFileController {
      */
     public void load() throws IOException {
         if (this.resourcePath != null && !Files.exists(this.fileLocation)) {
-            final Pack pluginPack = Sponge.server().packRepository().pack(this.pluginContainer);
-            // Create the file
-            final Optional<Resource> o = pluginPack.contents().resource(PackType.server(), this.resourcePath.get());
-            if (o.isPresent()) {
-                try (final Resource resource = o.get()) {
-                    Files.copy(resource.inputStream(), this.fileLocation);
-                }
-            }
+            // Create the file from the bundled default, if there is one
+            Util.copyBundledFile(this.resourcePath, this.fileLocation);
         }
 
         final List<String> fileContents = new ArrayList<>();
