@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.commandlogger.listeners;
 
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.Platform;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.modules.commandlogger.config.CommandLoggerConfig;
 import io.github.nucleuspowered.nucleus.modules.commandlogger.services.CommandLoggerHandler;
@@ -88,13 +90,17 @@ public class CommandLoggingListener implements IReloadableService.Reloadable, Li
                         .all()
                         .stream()
                         .filter(x -> (x instanceof PluginContainer || x instanceof Nameable || x instanceof SystemSubject) && x != source)
+                        // The game, API and implementation containers are in the cause of every command a player
+                        // types, so they say nothing about who ran it
+                        .filter(x -> !(x instanceof PluginContainer) || !CommandLoggingListener.isPlatformContainer((PluginContainer) x))
                         .map(x -> {
                             if (x instanceof Nameable) {
                                 return ((Nameable) x).name();
                             } else if (x instanceof SystemSubject) {
                                 return "Server";
                             } else {
-                                return "(plugin) " + ((PluginContainer) x).metadata().name();
+                                final PluginContainer plugin = (PluginContainer) x;
+                                return "(plugin) " + plugin.metadata().name().orElseGet(() -> plugin.metadata().id());
                             }
                         })
                         .collect(Collectors.toList());
@@ -129,5 +135,12 @@ public class CommandLoggingListener implements IReloadableService.Reloadable, Li
     @Override public void onReload(final INucleusServiceCollection serviceCollection) {
         this.c = serviceCollection.configProvider().getModuleConfig(CommandLoggerConfig.class);
         this.commandsToFilter = this.c.getCommandsToFilter().stream().map(String::toLowerCase).collect(Collectors.toSet());
+    }
+
+    private static boolean isPlatformContainer(final PluginContainer container) {
+        final Platform platform = Sponge.platform();
+        return container.equals(platform.container(Platform.Component.GAME))
+                || container.equals(platform.container(Platform.Component.API))
+                || container.equals(platform.container(Platform.Component.IMPLEMENTATION));
     }
 }
