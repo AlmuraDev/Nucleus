@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.nickname.services;
 
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
@@ -95,8 +96,17 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
     }
 
     public void updateCache(final UUID player, final Component text) {
-        this.cache.put(player, text.toString());
-        this.textCache.put(player, text);
+        // The plain nickname: Component#toString() is a debug representation ("TextComponentImpl{content=...}"), so
+        // looking players up by nickname (/realname, display name queries) never matched anything
+        final String plain = PlainTextComponentSerializer.plainText().serialize(text).trim();
+        this.removeReverseEntries(player);
+        this.cache.forcePut(player, plain);
+        this.textCache.forcePut(player, text);
+        this.reverseLowerCaseCache.put(plain.toLowerCase(), player);
+    }
+
+    private void removeReverseEntries(final UUID player) {
+        this.reverseLowerCaseCache.values().removeIf(player::equals);
     }
 
     public Optional<ServerPlayer> getFromCache(final String text) {
@@ -105,6 +115,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
             final Optional<ServerPlayer> ret = Sponge.server().player(u);
             if (!ret.isPresent()) {
                 this.cache.remove(u);
+                this.removeReverseEntries(u);
             }
 
             return ret;
@@ -164,6 +175,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         this.cache.remove(player);
         this.textCache.remove(player);
         this.cached.remove(player);
+        this.removeReverseEntries(player);
     }
 
     @Override
