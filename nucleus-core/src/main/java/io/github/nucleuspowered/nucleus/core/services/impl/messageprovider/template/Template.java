@@ -24,7 +24,9 @@ public final class Template implements ComponentLike {
         this.knownArgs = elements.stream()
                 .filter(x -> x instanceof ArgumentElement)
                 .map(x -> (ArgumentElement) x)
-                .collect(Collectors.toMap(x -> x.key, x -> x));
+                .collect(Collectors.toMap(x -> x.key, x -> x,
+                        // A message may use the same argument twice, e.g. "{0} ... {0}"; they're the same argument
+                        (first, second) -> first));
     }
 
     public Component create() {
