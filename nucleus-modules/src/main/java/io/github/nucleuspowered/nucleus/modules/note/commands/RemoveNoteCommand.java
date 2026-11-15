@@ -53,11 +53,12 @@ public class RemoveNoteCommand implements ICommandExecutor {
         handler.getNotes(uuid).thenAccept(x -> {
             if (x.isEmpty()) {
                 context.sendMessage("command.checknotes.none", name);
-            } else if (x.size() > idx) {
+            } else if (idx > x.size()) {
                 context.sendMessage("args.note.nonotedata", idx, name);
             } else {
+                // The index is 1-based (as /checknotes shows them)
                 final List<Note> list = new ArrayList<>(x);
-                final Note note = list.get(idx);
+                final Note note = list.get(idx - 1);
                 if (handler.removeNote(uuid, note).join()) {
                     context.sendMessage("command.removenote.success", name);
                 } else {
