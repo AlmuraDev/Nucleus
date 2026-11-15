@@ -379,7 +379,8 @@ public final class CommandContextImpl implements ICommandContext {
             return this.cause.location().map(Location::world);
         }
 
-        return Optional.empty();
+        // The world that was given (this returned empty, so naming a world never worked)
+        return optionalWorldProperties;
     }
 
     @Override
