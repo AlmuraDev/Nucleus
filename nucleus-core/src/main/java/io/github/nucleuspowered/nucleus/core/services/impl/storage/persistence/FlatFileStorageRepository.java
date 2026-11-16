@@ -198,11 +198,14 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
 
         @Override
         public Collection<K> getAllKeys(final Q query) throws DataLoadException, DataQueryException {
+            // All keys, or only the ones the query names. This always threw "There must only a key", so every
+            // "all users" lookup (/checkjailed, /checkmuted, /getfromip, ...) failed. Flat files can't evaluate other
+            // constraints, and nothing adds any.
+            final Set<K> keys = new HashSet<>(this.getAllKeysInternal());
             if (query.restrictedToKeys()) {
-                this.getAllKeysInternal().retainAll(query.keys());
+                keys.retainAll(query.keys());
             }
-
-            throw new DataQueryException("There must only a key", query);
+            return Collections.unmodifiableSet(keys);
         }
 
         protected abstract Set<K> getAllKeysInternal() throws DataLoadException;
