@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
 public class SetGameruleCommand implements ICommandExecutor {
 
     private final Parameter.Value<GameRule<?>> gameMode = Parameter.builder(new TypeToken<GameRule<?>>() {})
-            .addParser(VariableValueParameters.registryEntryBuilder(RegistryTypes.GAME_RULE).build())
+            .addParser(VariableValueParameters.registryEntryBuilder(RegistryTypes.GAME_RULE).defaultNamespace("minecraft").build())
             .key("gameRule")
             .build();
 

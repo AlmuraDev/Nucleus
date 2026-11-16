@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.core.scaffold.command;
 
+import org.spongepowered.api.world.difficulty.Difficulties;
+import org.spongepowered.api.world.difficulty.Difficulty;
 import java.util.Arrays;
 import java.util.ArrayList;
 import org.spongepowered.api.registry.DefaultedRegistryReference;
@@ -195,6 +197,31 @@ public final class NucleusParameters {
         NucleusParameters.addGameMode(choices, GameModes.ADVENTURE, "adventure", "a", "2");
         NucleusParameters.addGameMode(choices, GameModes.SPECTATOR, "spectator", "sp", "3");
         return Parameter.builder(GameMode.class).key(key).addParser(choices.build());
+    }
+
+    /**
+     * A difficulty argument: {@code 0}-{@code 3}, {@code p}/{@code e}/{@code n}/{@code h}, the names, or the namespaced
+     * keys. Difficulties are registered as {@code sponge:peaceful} etc. in API 21, so a registry parser that assumes
+     * the {@code minecraft} namespace accepted none of the plain names.
+     */
+    public static Parameter.Value.Builder<Difficulty> difficulty(final String key) {
+        final VariableValueParameters.StaticChoicesBuilder<Difficulty> choices = VariableValueParameters.staticChoicesBuilder(Difficulty.class)
+                .showInUsage(false);
+        NucleusParameters.addNamed(choices, Difficulties.PEACEFUL, "peaceful", "p", "0");
+        NucleusParameters.addNamed(choices, Difficulties.EASY, "easy", "e", "1");
+        NucleusParameters.addNamed(choices, Difficulties.NORMAL, "normal", "n", "2");
+        NucleusParameters.addNamed(choices, Difficulties.HARD, "hard", "h", "3");
+        return Parameter.builder(Difficulty.class).key(key).addParser(choices.build());
+    }
+
+    private static <T> void addNamed(final VariableValueParameters.StaticChoicesBuilder<T> choices,
+            final DefaultedRegistryReference<T> value, final String name, final String... aliases) {
+        final List<String> all = new ArrayList<>();
+        all.add(name);
+        all.add("minecraft:" + name);
+        all.add("sponge:" + name);
+        all.addAll(Arrays.asList(aliases));
+        choices.addChoices(all, value);
     }
 
     private static void addGameMode(final VariableValueParameters.StaticChoicesBuilder<GameMode> choices,

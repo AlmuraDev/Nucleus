@@ -46,17 +46,22 @@ public class DeleteWorldCommand implements ICommandExecutor {
 
     @Override
     public Parameter[] parameters(final INucleusServiceCollection serviceCollection) {
+        // Any existing world: it must be unloaded before it can be deleted, so a loaded-world-only argument meant
+        // nothing could ever be deleted
         return new Parameter[] {
-                NucleusParameters.ONLINE_WORLD,
+                NucleusParameters.OFFLINE_WORLD,
         };
     }
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final ServerWorld properties = context.requireOne(NucleusParameters.ONLINE_WORLD);
+        final ResourceKey worldKey = context.requireOne(NucleusParameters.OFFLINE_WORLD);
+        if (Sponge.server().worldManager().world(worldKey).isPresent()) {
+            return context.errorResult("command.world.delete.loaded", worldKey.asString());
+        }
         if (this.confirm != null && this.confirm._1().isAfter(Instant.now()) &&
                 this.confirm._2().equals(context.uniqueId().orElse(Util.CONSOLE_FAKE_UUID)) &&
-                this.confirm._3().equals(properties.key())) {
+                this.confirm._3().equals(worldKey)) {
             try {
                 return this.completeDeletion(context);
             } finally {
@@ -65,9 +70,9 @@ public class DeleteWorldCommand implements ICommandExecutor {
         }
 
         // Scary warning.
-        this.confirm = new Tuple3<>(Instant.now().plus(30, ChronoUnit.SECONDS), context.uniqueId().orElse(Util.CONSOLE_FAKE_UUID), properties.key());
-        context.sendMessage("command.world.delete.warning1", properties.key().asString());
-        context.sendMessage("command.world.delete.warning3", properties.key().asString());
+        this.confirm = new Tuple3<>(Instant.now().plus(30, ChronoUnit.SECONDS), context.uniqueId().orElse(Util.CONSOLE_FAKE_UUID), worldKey);
+        context.sendMessage("command.world.delete.warning1", worldKey.asString());
+        context.sendMessage("command.world.delete.warning3", worldKey.asString());
         return context.successResult();
     }
 

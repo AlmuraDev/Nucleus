@@ -51,7 +51,7 @@ public class CreateWorldCommand implements ICommandExecutor, IReloadableService.
             .key("world type")
             .build();
     private final Parameter.Value<Difficulty> difficultyValue =
-            Parameter.registryElement(TypeTokens.DIFFICULTY, RegistryTypes.DIFFICULTY).key("difficulty").build();
+            NucleusParameters.difficulty("difficulty").build();
     private final Parameter.Value<GameMode> gameMode = NucleusParameters.gameMode("gamemode").build();
     private final Parameter.Value<Long> seedValue = Parameter.longNumber().key("seed").build();
     private final Parameter.Value<Boolean> loadOnStartup = Parameter.bool().key("loadOnStartup").build();

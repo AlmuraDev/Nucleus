@@ -28,7 +28,7 @@ import org.spongepowered.api.world.storage.WorldProperties;
 public class SetDifficultyWorldCommand implements ICommandExecutor {
 
     private final Parameter.Value<Difficulty> difficultyValue =
-            Parameter.registryElement(TypeTokens.DIFFICULTY, RegistryTypes.DIFFICULTY).key("difficulty").build();
+            NucleusParameters.difficulty("difficulty").build();
 
     @Override
     public Parameter[] parameters(final INucleusServiceCollection serviceCollection) {

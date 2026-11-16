@@ -40,7 +40,8 @@ public class LoadWorldCommand implements ICommandExecutor {
 
         context.sendMessage("command.world.load.start", targetWorld.asString());
         Sponge.server().worldManager().loadWorld(targetWorld).handle((world, exception) -> {
-            if (exception != null) {
+            // An empty result means the world couldn't be loaded, e.g. nothing is known about it any more
+            if (exception != null || world == null || !world.isPresent()) {
                 context.getServiceCollection().schedulerService().runOnMainThread(() ->
                     context.sendMessage("command.world.load.fail", targetWorld.asString()));
             } else {
