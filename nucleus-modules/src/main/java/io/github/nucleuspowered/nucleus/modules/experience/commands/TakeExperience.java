@@ -33,9 +33,11 @@ public class TakeExperience implements ICommandExecutor {
 
     @Inject
     public TakeExperience(final INucleusServiceCollection serviceCollection) {
+        // Levels ("10L", "L10") only, under their own key: it shared the points argument's key, so a plain number
+        // was taken as levels, and Parameter.integerNumber() made the client reject "10L"
         this.experienceLevelParameter =
-                Parameter.integerNumber().addParser(new ExperienceLevelArgument(serviceCollection))
-                        .key("experience").build();
+                Parameter.builder(Integer.class).addParser(new ExperienceLevelArgument(serviceCollection))
+                        .key("levels").build();
         this.experienceValueParameter =
                 Parameter.integerNumber().addParser(VariableValueParameters.integerRange().min(0).max(Integer.MAX_VALUE).build())
                         .key("experience").build();
@@ -62,8 +64,12 @@ public class TakeExperience implements ICommandExecutor {
             final int currentLevel = pl.get(Keys.EXPERIENCE_LEVEL).orElse(0);
             final int levelReduction = context.requireOne(this.experienceLevelParameter);
 
-            // If this will take us down to below zero, we just let this continue to the return line. Else...
-            if (currentLevel >= levelReduction) {
+            // Taking more levels than the player has leaves them at level 0 (this fell through to the points branch,
+            // which has no value, and failed)
+            if (currentLevel < levelReduction) {
+                return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE, 0).isSuccessful());
+            }
+            {
                 final int betweenLevelExp = pl.get(Keys.EXPERIENCE_FROM_START_OF_LEVEL).orElse(0);
                 final int extra = pl.get(Keys.EXPERIENCE_SINCE_LEVEL).orElse(0);
                 DataTransactionResult result = pl.offer(Keys.EXPERIENCE_LEVEL, currentLevel - levelReduction);
@@ -76,6 +82,7 @@ public class TakeExperience implements ICommandExecutor {
 
         final int extra = context.requireOne(this.experienceValueParameter);
         final int exp = pl.get(Keys.EXPERIENCE).orElse(0) - extra;
-        return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE_LEVEL, Math.max(0, exp)).isSuccessful());
+        // Points, not the level (the points total was offered as the level)
+        return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE, Math.max(0, exp)).isSuccessful());
     }
 }

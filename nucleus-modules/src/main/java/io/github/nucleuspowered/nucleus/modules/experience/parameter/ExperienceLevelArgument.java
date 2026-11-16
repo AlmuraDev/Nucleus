@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.experience.parameter;
 
+import org.spongepowered.api.command.parameter.managed.clientcompletion.ClientCompletionTypes;
+import org.spongepowered.api.command.parameter.managed.clientcompletion.ClientCompletionType;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import org.spongepowered.api.command.CommandCompletion;
@@ -44,6 +46,12 @@ public class ExperienceLevelArgument implements ValueParameter<Integer> {
         }
 
         throw reader.createException(this.messageProviderService.getMessageFor(context.cause().audience(), "args.explevel.error"));
+    }
+
+    // A word such as "10L": an integer argument type made the client reject it
+    @Override
+    public List<ClientCompletionType> clientCompletionType() {
+        return Collections.singletonList(ClientCompletionTypes.STRING.get());
     }
 
     @Override

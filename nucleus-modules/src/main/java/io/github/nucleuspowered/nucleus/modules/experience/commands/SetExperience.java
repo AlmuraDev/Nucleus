@@ -30,9 +30,11 @@ public class SetExperience implements ICommandExecutor {
 
     @Inject
     public SetExperience(final INucleusServiceCollection serviceCollection) {
+        // Levels ("10L", "L10") only, under their own key: it shared the points argument's key, so a plain number
+        // was taken as levels, and Parameter.integerNumber() made the client reject "10L"
         this.experienceLevelParameter =
-                Parameter.integerNumber().addParser(new ExperienceLevelArgument(serviceCollection))
-                        .key("experience").build();
+                Parameter.builder(Integer.class).addParser(new ExperienceLevelArgument(serviceCollection))
+                        .key("levels").build();
         this.experienceValueParameter =
                 Parameter.integerNumber().addParser(VariableValueParameters.integerRange().min(0).max(Integer.MAX_VALUE).build())
                         .key("experience").build();

@@ -33,9 +33,11 @@ public class GiveExperience implements ICommandExecutor {
 
     @Inject
     public GiveExperience(final INucleusServiceCollection serviceCollection) {
+        // Levels ("10L", "L10") only, under their own key: it shared the points argument's key, so a plain number
+        // was taken as levels, and Parameter.integerNumber() made the client reject "10L"
         this.experienceLevelParameter =
-                Parameter.integerNumber().addParser(new ExperienceLevelArgument(serviceCollection))
-                        .key("experience").build();
+                Parameter.builder(Integer.class).addParser(new ExperienceLevelArgument(serviceCollection))
+                        .key("levels").build();
         this.experienceValueParameter =
                 Parameter.integerNumber().addParser(VariableValueParameters.integerRange().min(0).max(Integer.MAX_VALUE).build())
                         .key("experience").build();
@@ -57,18 +59,14 @@ public class GiveExperience implements ICommandExecutor {
             return res.get();
         }
 
-        final int extra;
+        // Levels ("10L") raise the level; a plain number adds experience points. The points total was offered as the
+        // level, so /exp give <player> 10 set the level from a points count (e.g. level 160).
         if (context.hasAny(this.experienceLevelParameter)) {
             final int lvl = pl.get(Keys.EXPERIENCE_LEVEL).orElse(0) + context.requireOne(this.experienceLevelParameter);
-            extra = pl.get(Keys.EXPERIENCE_SINCE_LEVEL).orElse(0);
-
-            // Offer level, then we offer the extra experience.
-            pl.tryOffer(Keys.EXPERIENCE_LEVEL, lvl);
-        } else {
-            extra = context.requireOne(this.experienceValueParameter);
+            return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE_LEVEL, lvl).isSuccessful());
         }
 
-        final int exp = pl.get(Keys.EXPERIENCE).orElse(0) + extra;
-        return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE_LEVEL, exp).isSuccessful());
+        final int exp = pl.get(Keys.EXPERIENCE).orElse(0) + context.requireOne(this.experienceValueParameter);
+        return ExperienceCommand.tellUserAboutExperience(context, pl, pl.offer(Keys.EXPERIENCE, exp).isSuccessful());
     }
 }
