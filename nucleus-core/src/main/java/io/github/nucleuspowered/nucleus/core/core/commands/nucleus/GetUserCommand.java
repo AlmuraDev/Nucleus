@@ -39,7 +39,7 @@ public class GetUserCommand implements ICommandExecutor {
                         Parameter.uuid().key(this.uuidKey).build(),
                         Parameter.builder(String.class)
                                 .key(this.playerKey)
-                                .addParser(new RegexParameter(Pattern.compile("^[.]{1,16}$"), "command.nucleus.getuser.regex",
+                                .addParser(new RegexParameter(Pattern.compile("^[A-Za-z0-9_]{1,16}$"), "command.nucleus.getuser.regex",
                                 serviceCollection.messageProvider()))
                                 .build()
             )
