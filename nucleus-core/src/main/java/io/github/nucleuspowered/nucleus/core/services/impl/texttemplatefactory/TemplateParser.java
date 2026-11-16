@@ -206,13 +206,17 @@ public final class TemplateParser implements INucleusTextTemplateFactory {
             // Build the URL
             final String whiteSpace = m.group("first");
             final ITextStyleService.TextFormat tf = st;
+            // Read the groups now: the lambdas run when the template is shown, after the matcher has moved on
+            // (calling m.group then throws "No match found")
             if (m.group("url") != null) {
                 final String url = m.group("url");
-                elements.add((a, b) -> this.getTextForUrl(url, url, whiteSpace, tf, m.group("options")));
+                final String options = m.group("options");
+                elements.add((a, b) -> this.getTextForUrl(url, url, whiteSpace, tf, options));
             } else if (m.group("specialUrl") != null) {
                 final String url = m.group("sUrl");
                 final String msg = m.group("msg");
-                elements.add((a, b) -> this.getTextForUrl(url, msg, whiteSpace, tf, m.group("optionssurl")));
+                final String options = m.group("optionssurl");
+                elements.add((a, b) -> this.getTextForUrl(url, msg, whiteSpace, tf, options));
             } else {
                 // Must be commands.
                 final String cmd = m.group("sCmd");
