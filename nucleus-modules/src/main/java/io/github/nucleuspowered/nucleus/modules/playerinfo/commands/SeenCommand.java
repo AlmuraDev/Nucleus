@@ -196,8 +196,14 @@ public class SeenCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final Either<UUID, GameProfile> target = NucleusParameters.Composite.parseUserOrGameProfile(context);
-        final User user = target.fold(x -> Sponge.server().userManager().loadOrCreate(x).join(),
-                x -> Sponge.server().userManager().loadOrCreate(x.uuid()).join());
+        final UUID uuid = target.fold(x -> x, GameProfile::uuid);
+        // On an offline-mode server a game profile can be made up for any name, so only show players who have joined:
+        // loading with loadOrCreate (and getOrNew below) created a user and a Nucleus data file for a name nobody had used
+        if (!Sponge.server().userManager().exists(uuid)) {
+            return context.errorResult("command.seen.notplayed",
+                    target.fold(UUID::toString, x -> x.name().orElseGet(() -> x.uuid().toString())));
+        }
+        final User user = Sponge.server().userManager().loadOrCreate(uuid).join();
         final IUserDataObject userDataObject = context.getServiceCollection()
                 .storageManager()
                 .getUserService()
@@ -207,7 +213,8 @@ public class SeenCommand implements ICommandExecutor {
 
         // Everyone gets the last online time.
         final IPlayerOnlineService playerOnlineService = context.getServiceCollection().playerOnlineService();
-        if (context.getAsPlayer().map(x -> playerOnlineService.isOnline(x, user)).orElse(true)) {
+        // Players get the vanish-aware check; the console (and other non-players) the actual state
+        if (context.getAsPlayer().map(x -> playerOnlineService.isOnline(x, user)).orElseGet(user::isOnline)) {
             messages.add(context.getMessage("command.seen.iscurrently.online", user.name()));
             userDataObject.get(CoreKeys.LAST_LOGIN).ifPresent(x -> messages.add(
                     context.getMessage("command.seen.loggedon", context.getTimeString(Duration.between(x, Instant.now())))));
@@ -229,13 +236,8 @@ public class SeenCommand implements ICommandExecutor {
             }
         }
 
-        // Add the extra module information.
-        // TODO: Ordering
-        final IPlayerInformationService playerInformationService = context.getServiceCollection().playerInformationService();
-        for (final IPlayerInformationService.Provider provider : playerInformationService.getProviders()) {
-            provider.get(user, context.cause(), context.getServiceCollection()).ifPresent(messages::add);
-        }
-
+        // The module information (SeenHandler adds every IPlayerInformationService provider, then other plugins'
+        // providers; adding the providers here as well listed every module's lines twice)
         messages.addAll(context.getServiceCollection().getServiceUnchecked(SeenHandler.class)
                 .getText(context.cause(), user));
 
