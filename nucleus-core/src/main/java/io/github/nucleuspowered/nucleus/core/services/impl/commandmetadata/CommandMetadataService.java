@@ -416,8 +416,20 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
     }
 
     @Override
-    public CommandControl getControl(final String primaryAlias) {
-        return this.registeredCommands.get(this.commandMetadataMap.get(primaryAlias));
+    public @Nullable CommandControl getControl(final String primaryAlias) {
+        // Sponge's primary alias for a plugin command is namespaced ("nucleus:seen"); commands are keyed by their
+        // commands.conf key ("seen"), so this always returned null and /commandinfo crashed
+        final String alias = primaryAlias.substring(primaryAlias.indexOf(':') + 1).toLowerCase(java.util.Locale.ROOT);
+        final @Nullable CommandMetadata metadata = this.commandMetadataMap.get(alias);
+        final @Nullable CommandControl control = metadata == null ? null : this.registeredCommands.get(metadata);
+        if (control != null) {
+            return control;
+        }
+        return this.controlToAliases.entrySet().stream()
+                .filter(entry -> entry.getValue().stream().anyMatch(a -> a.equalsIgnoreCase(alias)))
+                .map(java.util.Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override public void onReload(final INucleusServiceCollection serviceCollection) {

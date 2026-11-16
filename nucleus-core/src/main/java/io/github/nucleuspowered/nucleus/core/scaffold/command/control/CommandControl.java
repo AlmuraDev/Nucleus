@@ -424,6 +424,15 @@ public final class CommandControl {
     }
 
     public Component getUsage(final ICommandContext context) {
-        return Component.empty();
+        // What the command does (its short and extended descriptions) and its subcommands; this was an empty stub,
+        // so /commandinfo had nothing to show for any Nucleus command
+        final List<Component> parts = new java.util.ArrayList<>();
+        this.getShortDescription(context.cause()).ifPresent(parts::add);
+        this.getExtendedDescription(context.cause()).ifPresent(parts::add);
+        final Component subcommands = this.getSubcommandTexts();
+        if (!net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(subcommands).isBlank()) {
+            parts.add(subcommands);
+        }
+        return Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), parts);
     }
 }

@@ -96,7 +96,7 @@ public class CommandInfoCommand implements ICommandExecutor {
         content.add(context.getMessage("command.commandinfo.type", "loc:command.commandinfo.nucleus"));
         content.add(Component.empty());
         final CommandControl control = context.getServiceCollection().commandMetadataService().getControl(mapping.primaryAlias());
-        final Component text = control.getUsage(context);
+        final Component text = control == null ? Component.empty() : control.getUsage(context);
         if (AdventureUtils.isEmpty(text)) {
             content.add(context.getMessage("command.commandinfo.noinfo"));
         } else {
