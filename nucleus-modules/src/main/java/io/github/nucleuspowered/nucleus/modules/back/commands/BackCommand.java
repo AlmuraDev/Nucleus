@@ -74,7 +74,7 @@ public class BackCommand implements ICommandExecutor, IReloadableService.Reloada
 
         final boolean border = context.hasFlag("b");
         final WorldPositionRotation loc = ol.get();
-        if (this.sameDimensionCheck && src.world().key() != loc.getResourceKey()) {
+        if (this.sameDimensionCheck && !src.world().key().equals(loc.getResourceKey())) {
             if (!context.testPermission(BackPermissions.BACK_EXEMPT_SAMEDIMENSION)) {
                 return context.errorResult("command.back.sameworld");
             }
