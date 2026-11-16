@@ -99,15 +99,20 @@ public class CreateWorldCommand implements ICommandExecutor, IReloadableService.
         final boolean bonusChest = context.getOne(this.bonusChest).orElse(true);
         final boolean pvp = context.getOne(this.pvpEnabled).orElse(true);
 
-        final ResourceKey projectedKey = ResourceKey.of(context.getServiceCollection().pluginContainer(), nameInput.toLowerCase());
+        final WorldArchetypeType type = dimensionInput.orElseGet(() ->
+                Sponge.server().registry(RegistryTypes.WORLD_ARCHETYPE_TYPE).value(ResourceKey.minecraft("overworld")));
+        final ResourceKey typeKey = type.findKey(RegistryTypes.WORLD_ARCHETYPE_TYPE).orElse(ResourceKey.minecraft("overworld"));
+
+        // The world goes in its generator's namespace (dimensions/<namespace>/<name>): -w terraincontrol:orilla makes
+        // terraincontrol:<name>, the default overworld minecraft:<name>. A full key is used as given. (This was always
+        // nucleus:<name>, though Nucleus generates nothing.)
+        final ResourceKey projectedKey = nameInput.contains(":")
+                ? ResourceKey.resolve(nameInput.toLowerCase())
+                : ResourceKey.of(typeKey.namespace(), nameInput.toLowerCase());
         final WorldManager worldManager = Sponge.server().worldManager();
         if (worldManager.worldExists(projectedKey)) {
             return context.errorResult("command.world.create.exists", nameInput);
         }
-
-        final WorldArchetypeType type = dimensionInput.orElseGet(() ->
-                Sponge.server().registry(RegistryTypes.WORLD_ARCHETYPE_TYPE).value(ResourceKey.minecraft("overworld")));
-        final ResourceKey typeKey = type.findKey(RegistryTypes.WORLD_ARCHETYPE_TYPE).orElse(ResourceKey.minecraft("overworld"));
 
         final WorldGenerationConfig.Builder genConfig = WorldGenerationConfig.builder()
                 .generateBonusChest(bonusChest)

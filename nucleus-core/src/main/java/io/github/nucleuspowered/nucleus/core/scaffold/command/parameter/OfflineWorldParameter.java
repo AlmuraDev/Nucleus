@@ -34,25 +34,15 @@ public class OfflineWorldParameter implements ValueParameter<ResourceKey> {
 
     @Override
     public List<CommandCompletion> complete(final CommandContext context, final String input) {
-        return Sponge.server().worldManager().offlineWorldKeys().stream()
-                .filter(x -> x.formatted().startsWith(input))
-                .map(x -> CommandCompletion.of(x.asString()))
-                .collect(Collectors.toList());
+        return WorldKeys.complete(Sponge.server().worldManager().offlineWorldKeys(), input);
     }
 
     @Override
     public Optional<? extends ResourceKey> parseValue(final Parameter.Key<? super ResourceKey> parameterKey,
             final ArgumentReader.Mutable reader, final CommandContext.Builder context) throws ArgumentParseException {
-        final ResourceKey key = reader.parseResourceKey();
-        final Optional<ResourceKey> ow =
-                Sponge.server().worldManager().offlineWorldKeys()
-                        .stream()
-                        .filter(x -> x.equals(key))
-                        .findFirst();
-        if (ow.isPresent()) {
-            return ow;
-        }
-        throw reader.createException(this.errorMessageGenerator.apply(key));
+        // By full key or, when unique, by name (see WorldKeys)
+        return Optional.of(WorldKeys.read(reader, Sponge.server().worldManager().offlineWorldKeys(),
+                typed -> this.errorMessageGenerator.apply(ResourceKey.resolve(typed.contains(":") ? typed : "minecraft:" + typed))));
     }
 
     @Override

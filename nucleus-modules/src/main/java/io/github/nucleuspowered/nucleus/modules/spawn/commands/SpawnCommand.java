@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
+import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.OnlineWorldParameter;
 import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
@@ -54,7 +55,8 @@ public class SpawnCommand implements ICommandExecutor, IReloadableService.Reload
 
     @Inject
     public SpawnCommand(final IPermissionService permissionService) {
-        this.worldPropertiesValueParameter = Parameter.world()
+        this.worldPropertiesValueParameter = Parameter.builder(ServerWorld.class)
+                .addParser(new OnlineWorldParameter())
                 .key("world")
                 .optional()
                 .requirements(cause -> permissionService.hasPermission(cause, SpawnPermissions.SPAWN_OTHERWORLDS))

@@ -49,7 +49,8 @@ public class TeleportWorldCommand implements ICommandExecutor {
     }
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final ServerPlayer player = context.getIfPlayer("command.world.player");
+        // The player given, else the sender: getIfPlayer ignored the player argument, so nobody else could be sent
+        final ServerPlayer player = context.getPlayerFromArgs();
         final ServerWorld worldProperties = context.requireOne(NucleusParameters.ONLINE_WORLD);
         final Vector3d pos = worldProperties.properties().spawnPosition().toDouble();
         if (!player.transferToWorld(worldProperties, pos)) {

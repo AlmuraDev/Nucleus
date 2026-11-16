@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.scaffold.command;
 
+import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.OnlineWorldParameter;
 import org.spongepowered.api.world.difficulty.Difficulties;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import java.util.Arrays;
@@ -128,9 +129,12 @@ public final class NucleusParameters {
 
     public static final Parameter.Value<String> OPTIONAL_REASON = Parameter.remainingJoinedStrings().key(Keys.REASON).optional().build();
 
-    public static final Parameter.Value<ServerWorld> ONLINE_WORLD = CommonParameters.WORLD;
+    // A loaded world by full key, or by name when unique ("orilla" for terraincontrol:orilla)
+    public static final Parameter.Value<ServerWorld> ONLINE_WORLD =
+            Parameter.builder(ServerWorld.class).key(Keys.WORLD).addParser(new OnlineWorldParameter()).build();
 
-    public static final Parameter.Value<ServerWorld> ONLINE_WORLD_OPTIONAL = Parameter.world().optional().key(Keys.WORLD).build();
+    public static final Parameter.Value<ServerWorld> ONLINE_WORLD_OPTIONAL =
+            Parameter.builder(ServerWorld.class).addParser(new OnlineWorldParameter()).optional().key(Keys.WORLD).build();
 
     public static final Parameter.Value<ResourceKey> OFFLINE_WORLD =
             Parameter.builder(ResourceKey.class)

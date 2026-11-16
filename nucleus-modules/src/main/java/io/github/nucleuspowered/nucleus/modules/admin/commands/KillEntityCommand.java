@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.admin.commands;
 
+import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.modules.admin.AdminPermissions;
 import io.github.nucleuspowered.nucleus.modules.admin.parameter.AdminParameters;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
@@ -46,7 +47,7 @@ public class KillEntityCommand implements ICommandExecutor {
     public Flag[] flags(final INucleusServiceCollection serviceCollection) {
         return new Flag[] {
                 Flag.builder().alias("r").setParameter(this.radius).build(),
-                Flag.builder().alias("w").setParameter(CommonParameters.WORLD).build()
+                Flag.builder().alias("w").setParameter(NucleusParameters.ONLINE_WORLD).build()
         };
     }
 
@@ -60,12 +61,12 @@ public class KillEntityCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final CommandCause src = context.cause();
-        if (!(src.location().isPresent()) && context.hasAny(CommonParameters.WORLD)) {
+        if (!(src.location().isPresent()) && context.hasAny(NucleusParameters.ONLINE_WORLD)) {
             // We can't do that.
             return context.errorResult("command.killentity.commandsourceradius");
         }
 
-        if (context.hasAny(this.radius) && context.hasAny(CommonParameters.WORLD)) {
+        if (context.hasAny(this.radius) && context.hasAny(NucleusParameters.ONLINE_WORLD)) {
             // Can't do that, either.
             return context.errorResult("command.killentity.radiusworld");
         }
@@ -77,8 +78,8 @@ public class KillEntityCommand implements ICommandExecutor {
             l.serverLocation().world().nearbyEntities(l.serverLocation().position(), r);
         } else {
             final ServerWorld worldProperties;
-            if (context.hasAny(CommonParameters.WORLD)) {
-                worldProperties = context.requireOne(CommonParameters.WORLD);
+            if (context.hasAny(NucleusParameters.ONLINE_WORLD)) {
+                worldProperties = context.requireOne(NucleusParameters.ONLINE_WORLD);
             } else {
                 worldProperties = ((Locatable) src).serverLocation().world();
             }
