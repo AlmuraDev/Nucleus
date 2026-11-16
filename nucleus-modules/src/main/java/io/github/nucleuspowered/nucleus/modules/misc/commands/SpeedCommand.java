@@ -65,7 +65,8 @@ public class SpeedCommand implements ICommandExecutor, IReloadableService.Reload
             .build();
     private final Parameter.Value<Boolean> reset = Parameter.builder(Boolean.class)
             .key("reset")
-            .addParser(VariableValueParameters.literalBuilder(Boolean.class).literal(Collections.singleton("reset")).build())
+            // A literal needs a value to return, or matching it counts as a failed argument and "reset" was rejected
+            .addParser(VariableValueParameters.literalBuilder(Boolean.class).literal(Collections.singleton("reset")).returnValue(true).build())
             .build();
 
     @Inject
@@ -134,7 +135,8 @@ public class SpeedCommand implements ICommandExecutor, IReloadableService.Reload
         final DataTransactionResult dtr = pl.offer(key.speedKey, speed / (double) multiplier);
 
         if (dtr.isSuccessful()) {
-            context.sendMessage("command.speed.success.base", key.name, String.valueOf(speed));
+            // "Your speed..." goes to the player whose speed changed, not to whoever ran the command
+            context.sendMessageTo(pl, "command.speed.success.base", key.name, String.valueOf(speed));
 
             if (!context.is(pl)) {
                 context.sendMessage("command.speed.success.other", pl.name(), key.name, String.valueOf(speed));
