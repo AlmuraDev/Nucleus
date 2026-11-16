@@ -20,20 +20,22 @@ public final class ServicesUtil {
         final CompletableFuture<R> future = new CompletableFuture<>();
 
         if (Sponge.isServerAvailable() && Sponge.server().onMainThread()) {
-            Sponge.asyncScheduler().executor(pluginContainer).submit(() -> ServicesUtil.runInternal(future, taskConsumer, printException));
+            Sponge.asyncScheduler().executor(pluginContainer).submit(() -> ServicesUtil.runInternal(future, taskConsumer, printException, pluginContainer));
         } else {
-            ServicesUtil.runInternal(future, taskConsumer, printException);
+            ServicesUtil.runInternal(future, taskConsumer, printException, pluginContainer);
         }
 
         return future;
     }
 
-    private static <R> void runInternal(final CompletableFuture<R> future, final CheckedFunction0<R> taskConsumer, final boolean printException) {
+    private static <R> void runInternal(final CompletableFuture<R> future, final CheckedFunction0<R> taskConsumer, final boolean printException,
+            final PluginContainer pluginContainer) {
         try {
             future.complete(taskConsumer.apply());
         } catch (final Throwable e) {
             if (printException) {
-                e.printStackTrace();
+                // Through the plugin's logger: printStackTrace only reached the console, never the server log
+                pluginContainer.logger().error("A storage task failed: {}", e.getMessage(), e);
             }
             future.completeExceptionally(e);
         }
