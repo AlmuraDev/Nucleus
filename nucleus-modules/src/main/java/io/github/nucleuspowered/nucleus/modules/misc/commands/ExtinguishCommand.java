@@ -56,6 +56,6 @@ public class ExtinguishCommand implements ICommandExecutor {
             return context.successResult();
         }
 
-        return context.errorResult("command.extinguish.failed", target.name());
+        return context.errorResult("command.extinguish.fail", target.name());
     }
 }

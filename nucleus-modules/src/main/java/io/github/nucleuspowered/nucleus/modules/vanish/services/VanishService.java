@@ -101,7 +101,8 @@ public class VanishService implements IReloadableService.Reloadable, ServiceBase
                 this.schedulerService.runOnMainThread(() -> this.vanishPlayerInternal(player.player().get()));
             } else {
                 this.lastVanish.put(player.uniqueId(), Instant.now());
-                this.vanishPlayerInternal((Player) player);
+                // A User is not a Player in API 8+: casting it threw ClassCastException for every /vanish
+                player.player().ifPresent(this::vanishPlayerInternal);
             }
         }
     }
