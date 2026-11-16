@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.misc;
 
+import io.github.nucleuspowered.nucleus.modules.misc.commands.SpeedCommand;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.BlockInfoCommand;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.EntityInfoCommand;
@@ -45,6 +46,7 @@ public final class MiscModule implements IModule.Configurable<MiscConfig> {
                 PingCommand.class,
                 ServerStatCommand.class,
                 ServerTimeCommand.class,
+                SpeedCommand.class,
                 SuicideCommand.class
         );
     }
