@@ -12,7 +12,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.Command;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.userprefs.UserPreferenceService;
+import io.github.nucleuspowered.nucleus.core.services.interfaces.IUserPreferenceService;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 
@@ -37,7 +37,9 @@ public class MsgToggleCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final UserPreferenceService userPreferenceService = context.getServiceCollection().getServiceUnchecked(UserPreferenceService.class);
+        // The core preference service: asking the module-service registry for it threw NoSuchElementException, so
+        // /msgtoggle failed for everyone
+        final IUserPreferenceService userPreferenceService = context.getServiceCollection().userPreferenceService();
         final UUID player = context.getIfPlayer().uniqueId();
         final NucleusUserPreferenceService.PreferenceKey<Boolean> key =
                 context.getServiceCollection().userPreferenceService().keys().messageReceivingEnabled().orElseThrow(IllegalStateException::new);
