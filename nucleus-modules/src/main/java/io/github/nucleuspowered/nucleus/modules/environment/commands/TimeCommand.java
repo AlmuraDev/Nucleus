@@ -46,7 +46,9 @@ public class TimeCommand implements ICommandExecutor {
         final ServerWorld pr = context.getWorldPropertiesOrFromSelfOptional(NucleusParameters.ONLINE_WORLD_OPTIONAL.key())
                 .orElseGet(() -> Util.defaultWorld());
 
-        context.sendMessage("command.time", pr.key().asString(), context.getTimeString(pr.properties().dayTime().asInGameDuration()));
+        // The time of day, as /settime shows it (asInGameDuration is how long the world has existed, e.g. "1 day, 6 hours")
+        context.sendMessage("command.time", pr.key().asString(),
+                Util.getTimeFromDayTime(context.getServiceCollection().messageProvider(), pr.properties().dayTime()));
         return context.successResult();
     }
 }
