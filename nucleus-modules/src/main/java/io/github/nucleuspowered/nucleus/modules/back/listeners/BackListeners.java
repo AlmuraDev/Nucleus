@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.back.listeners;
 
+import org.spongepowered.api.event.cause.entity.MovementTypes;
+import org.spongepowered.api.event.EventContextKeys;
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.module.jail.NucleusJailService;
 import io.github.nucleuspowered.nucleus.modules.back.BackPermissions;
@@ -71,6 +73,11 @@ public class BackListeners implements IReloadableService.Reloadable, ListenerBas
     }
 
     private boolean check(final MoveEntityEvent event) {
+        // MoveEntityEvent fires for every step a player walks, not just teleports: recording those made /back return
+        // you to where you stood a moment ago. Walking is MovementTypes.NATURAL; teleports are COMMAND, PLUGIN, etc.
+        if (event.context().get(EventContextKeys.MOVEMENT_TYPE).filter(type -> type == MovementTypes.NATURAL.get()).isPresent()) {
+            return false;
+        }
         return !event.originalPosition().equals(event.destinationPosition());
     }
 
