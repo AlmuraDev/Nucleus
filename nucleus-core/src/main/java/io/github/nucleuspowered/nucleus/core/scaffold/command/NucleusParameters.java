@@ -13,6 +13,7 @@ import org.spongepowered.api.registry.DefaultedRegistryReference;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.AudienceValueParameter;
+import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.KnownWorldParameter;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.OfflineWorldParameter;
 import io.leangen.geantyref.TypeToken;
 import io.vavr.control.Either;
@@ -135,6 +136,10 @@ public final class NucleusParameters {
 
     public static final Parameter.Value<ServerWorld> ONLINE_WORLD_OPTIONAL =
             Parameter.builder(ServerWorld.class).addParser(new OnlineWorldParameter()).optional().key(Keys.WORLD).build();
+
+    /** A loaded or unloaded world, by key or unique name. */
+    public static final Parameter.Value<ResourceKey> KNOWN_WORLD =
+            Parameter.builder(ResourceKey.class).key(Keys.WORLD).addParser(new KnownWorldParameter()).build();
 
     public static final Parameter.Value<ResourceKey> OFFLINE_WORLD =
             Parameter.builder(ResourceKey.class)
