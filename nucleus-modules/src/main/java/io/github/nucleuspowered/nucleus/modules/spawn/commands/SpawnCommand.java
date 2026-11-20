@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
-import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.OnlineWorldParameter;
+import io.github.nucleuspowered.nucleus.core.scaffold.command.parameter.KnownWorldParameter;
 import io.github.nucleuspowered.nucleus.core.Util;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
@@ -23,6 +23,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.modifier.CommandMo
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
@@ -49,14 +50,15 @@ import org.spongepowered.math.vector.Vector3d;
 )
 public class SpawnCommand implements ICommandExecutor, IReloadableService.Reloadable {
 
-    private final Parameter.Value<ServerWorld> worldPropertiesValueParameter;
+    private final Parameter.Value<ResourceKey> worldPropertiesValueParameter;
 
     private SpawnConfig sc = new SpawnConfig();
 
     @Inject
     public SpawnCommand(final IPermissionService permissionService) {
-        this.worldPropertiesValueParameter = Parameter.builder(ServerWorld.class)
-                .addParser(new OnlineWorldParameter())
+        // Loaded or not: an unloaded world is loaded first, as Nucleus did on 1.12
+        this.worldPropertiesValueParameter = Parameter.builder(ResourceKey.class)
+                .addParser(new KnownWorldParameter())
                 .key("world")
                 .optional()
                 .requirements(cause -> permissionService.hasPermission(cause, SpawnPermissions.SPAWN_OTHERWORLDS))
@@ -91,47 +93,43 @@ public class SpawnCommand implements ICommandExecutor, IReloadableService.Reload
         final ServerPlayer src = context.requirePlayer();
         final boolean force = context.hasFlag("f");
         final GlobalSpawnConfig gsc = this.sc.getGlobalSpawn();
-        final ServerWorld targetWorld = context.getOne(this.worldPropertiesValueParameter)
-            .orElseGet(() -> {
-                if (gsc.isOnSpawnCommand()) {
-                    return gsc.getWorld().orElseGet(() -> src.world());
-                } else {
-                    return src.world();
-                }
-            });
+        final ResourceKey targetKey = context.getOne(this.worldPropertiesValueParameter)
+            .orElseGet(() -> gsc.isOnSpawnCommand() ? gsc.getWorldKey() : src.world().key());
 
         if (this.sc.isPerWorldPerms() &&
-                !context.testPermission(SpawnPermissions.SPAWN_WORLDS + "." + Util.worldPermissionSuffix(targetWorld.key()))) {
-            return context.errorResult("command.spawn.nopermsworld", targetWorld.key().asString().toLowerCase());
+                !context.testPermission(SpawnPermissions.SPAWN_WORLDS + "." + Util.worldPermissionSuffix(targetKey))) {
+            return context.errorResult("command.spawn.nopermsworld", targetKey.asString().toLowerCase());
         }
 
-        final Vector3d rotation = context.getServiceCollection().storageManager()
-                .getOrCreateWorldOnThread(targetWorld.key())
-                .get(SpawnKeys.WORLD_SPAWN_ROTATION)
-                .orElseGet(src::rotation);
+        return context.withWorld(targetKey, targetWorld -> {
+            final Vector3d rotation = context.getServiceCollection().storageManager()
+                    .getOrCreateWorldOnThread(targetWorld.key())
+                    .get(SpawnKeys.WORLD_SPAWN_ROTATION)
+                    .orElseGet(src::rotation);
 
-        // If we don't have a rotation, then use the current rotation
-        final TeleportResult result = context
-                .getServiceCollection()
-                .teleportService()
-                .teleportPlayerSmart(
-                        src,
-                        ServerLocation.of(targetWorld, targetWorld.properties().spawnPosition()),
-                        rotation,
-                        true,
-                        !force && this.sc.isSafeTeleport(),
-                        TeleportScanners.NO_SCAN.get()
-                );
+            // If we don't have a rotation, then use the current rotation
+            final TeleportResult result = context
+                    .getServiceCollection()
+                    .teleportService()
+                    .teleportPlayerSmart(
+                            src,
+                            ServerLocation.of(targetWorld, targetWorld.properties().spawnPosition()),
+                            rotation,
+                            true,
+                            !force && this.sc.isSafeTeleport(),
+                            TeleportScanners.NO_SCAN.get()
+                    );
 
-        if (result.isSuccessful()) {
-            context.sendMessage("command.spawn.success", targetWorld.key().asString());
-            return context.successResult();
-        }
+            if (result.isSuccessful()) {
+                context.sendMessage("command.spawn.success", targetWorld.key().asString());
+                return context.successResult();
+            }
 
-        if (result == TeleportResult.FAIL_NO_LOCATION) {
-            return context.errorResult("command.spawn.fail", targetWorld.key().asString());
-        }
+            if (result == TeleportResult.FAIL_NO_LOCATION) {
+                return context.errorResult("command.spawn.fail", targetWorld.key().asString());
+            }
 
-        return context.errorResult("command.spawn.cancelled", targetWorld.key().asString());
+            return context.errorResult("command.spawn.cancelled", targetWorld.key().asString());
+        });
     }
 }

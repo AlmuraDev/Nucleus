@@ -25,6 +25,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.task.CostCancellableTask;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
@@ -77,7 +78,8 @@ public class RandomTeleportCommand implements ICommandExecutor, IReloadableServi
     @Override public Parameter[] parameters(final INucleusServiceCollection serviceCollection) {
         return new Parameter[] {
                 serviceCollection.commandElementSupplier().createOnlyOtherPlayerPermissionElement(RTPPermissions.OTHERS_RTP),
-                NucleusParameters.ONLINE_WORLD_OPTIONAL
+                // Loaded or not: an unloaded world is loaded first, as Nucleus did on 1.12
+                NucleusParameters.KNOWN_WORLD_OPTIONAL
         };
     }
 
@@ -90,37 +92,34 @@ public class RandomTeleportCommand implements ICommandExecutor, IReloadableServi
             }
         }
 
-        // Get the current world.
-        final ServerWorld wp;
-        if (this.rc.getDefaultWorld().isPresent()) {
-            wp = context.getOne(NucleusParameters.ONLINE_WORLD_OPTIONAL).orElseGet(() -> this.rc.getDefaultWorld().get());
-        } else {
-            wp = context.getWorldPropertiesOrFromSelfOptional(NucleusParameters.ONLINE_WORLD_OPTIONAL.key()).get();
-        }
+        // The world given, else the configured default, else the player's own
+        final ResourceKey worldKey = context.getOne(NucleusParameters.KNOWN_WORLD_OPTIONAL)
+                .orElseGet(() -> this.rc.getDefaultWorldKey().orElseGet(() -> player.world().key()));
 
         if (this.rc.isPerWorldPermissions()) {
-            final String name = wp.key().asString();
-            if (!context.testPermission(RTPPermissions.RTP_WORLDS + "." + Util.worldPermissionSuffix(wp.key()))) {
-                return context.errorResult("command.rtp.worldnoperm", name);
+            if (!context.testPermission(RTPPermissions.RTP_WORLDS + "." + Util.worldPermissionSuffix(worldKey))) {
+                return context.errorResult("command.rtp.worldnoperm", worldKey.asString());
             }
         }
 
-        context.sendMessage("command.rtp.searching");
+        return context.withWorld(worldKey, wp -> {
+            context.sendMessage("command.rtp.searching");
 
-        final RTPOptions options = new RTPOptions(this.rc, wp.key().asString());
-        final RTPTask rtask = new RTPTask(
-                context.getServiceCollection().pluginContainer(),
-                wp,
-                context,
-                player.uniqueId(),
-                this.rc.getNoOfAttempts(),
-                options,
-                context.getServiceCollection().getServiceUnchecked(RTPService.class).getKernel(wp),
-                context.is(player) ? context.getCost() : 0);
-        final Task task = Task.builder().execute(rtask).plugin(context.getServiceCollection().pluginContainer()).build();
-        this.cachedTasks.put(Sponge.server().scheduler().submit(task), player.uniqueId());
+            final RTPOptions options = new RTPOptions(this.rc, wp.key().asString());
+            final RTPTask rtask = new RTPTask(
+                    context.getServiceCollection().pluginContainer(),
+                    wp,
+                    context,
+                    player.uniqueId(),
+                    this.rc.getNoOfAttempts(),
+                    options,
+                    context.getServiceCollection().getServiceUnchecked(RTPService.class).getKernel(wp),
+                    context.is(player) ? context.getCost() : 0);
+            final Task task = Task.builder().execute(rtask).plugin(context.getServiceCollection().pluginContainer()).build();
+            this.cachedTasks.put(Sponge.server().scheduler().submit(task), player.uniqueId());
 
-        return context.successResult();
+            return context.successResult();
+        });
     }
 
     @Override public void onReload(final INucleusServiceCollection serviceCollection) {

@@ -46,6 +46,12 @@ public class GlobalSpawnConfig {
         return this.onLogin;
     }
 
+    /** The spawn world, loaded or not, else the default world. */
+    public ResourceKey getWorldKey() {
+        final ResourceKey key = ResourceKey.resolve(this.spawnWorld);
+        return Sponge.server().worldManager().worldExists(key) ? key : Util.defaultWorld().key();
+    }
+
     public Optional<ServerWorld> getWorld() {
         Optional<ServerWorld> ow = Sponge.server().worldManager().world(ResourceKey.resolve(this.spawnWorld));
         if (!ow.isPresent()) {

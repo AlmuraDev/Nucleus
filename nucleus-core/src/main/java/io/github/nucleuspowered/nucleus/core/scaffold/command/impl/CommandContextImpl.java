@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.scaffold.command.impl;
 
+import org.spongepowered.api.ResourceKey;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.CommandModifier;
@@ -50,6 +51,7 @@ public final class CommandContextImpl implements ICommandContext {
     private int warmup;
     private final boolean isBypass;
     private final CommandCause cause;
+    private final CommandControl control;
     private final CommandContext context;
     private final Map<CommandModifier, ICommandModifier> modifiers;
     private final ArrayList<Consumer<ICommandContext>> failActions = new ArrayList<>();
@@ -70,6 +72,7 @@ public final class CommandContextImpl implements ICommandContext {
             final boolean isBypass,
             final Map<CommandModifier, ICommandModifier> modifiers) {
         this.cause = cause;
+        this.control = control;
         this.commandkey = control.getCommandKey();
         this.context = context;
         this.serviceCollection = serviceCollection;
@@ -465,6 +468,44 @@ public final class CommandContextImpl implements ICommandContext {
             locale = Sponge.server().locale();
         }
         return locale;
+    }
+
+    @Override
+    public ICommandResult withWorld(final ResourceKey worldKey, final WorldAction rest) throws CommandException {
+        final Optional<ServerWorld> loaded = Sponge.server().worldManager().world(worldKey);
+        if (loaded.isPresent()) {
+            return rest.run(loaded.get());
+        }
+
+        this.sendMessage("command.world.load.start", worldKey.asString());
+        Sponge.server().worldManager().loadWorld(worldKey).handle((world, exception) -> {
+            this.serviceCollection.schedulerService().runOnMainThread(() -> {
+                // An empty result means the world couldn't be loaded
+                if (exception != null || world == null || !world.isPresent()) {
+                    if (exception != null) {
+                        this.serviceCollection.logger().warn("Could not load world {}", worldKey.asString(), exception);
+                    }
+                    this.control.completeLater(this, this.errorResult("command.world.load.fail", worldKey.asString()));
+                    return;
+                }
+
+                // A player who left while the world loaded can't be moved any more
+                if (this.cause.root() instanceof ServerPlayer && !((ServerPlayer) this.cause.root()).isOnline()) {
+                    return;
+                }
+
+                ICommandResult result;
+                try {
+                    result = rest.run(world.get());
+                } catch (final CommandException ex) {
+                    result = this.errorResultLiteral(ex.componentMessage() == null
+                            ? Component.text("Unknown error!", NamedTextColor.RED) : ex.componentMessage());
+                }
+                this.control.completeLater(this, result);
+            });
+            return null;
+        });
+        return ICommandResult.willContinueLater();
     }
 
 }

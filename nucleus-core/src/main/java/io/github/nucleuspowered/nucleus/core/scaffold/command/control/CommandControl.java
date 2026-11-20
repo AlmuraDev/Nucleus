@@ -242,6 +242,22 @@ public final class CommandControl {
         return result;
     }
 
+    /**
+     * Finishes a command whose executor returned {@link ICommandResult#willContinueLater()}: success runs the
+     * completion modifiers (cooldown, cost), failure runs the fail actions and sends the error.
+     */
+    public void completeLater(final ICommandContext contextSource, final ICommandResult result) {
+        try {
+            if (!result.isSuccess() && !result.isWillContinue()) {
+                this.onFail(contextSource, result.getErrorMessage(contextSource).orElse(null));
+            } else {
+                this.onResult(contextSource, result);
+            }
+        } catch (final CommandException ex) {
+            this.onFail(contextSource, ex.componentMessage());
+        }
+    }
+
     private void onResult(final ICommandContext contextSource, final ICommandResult result) throws CommandException {
         if (result.isSuccess()) {
             this.onSuccess(contextSource);

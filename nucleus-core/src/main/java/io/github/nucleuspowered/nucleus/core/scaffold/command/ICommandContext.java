@@ -10,6 +10,7 @@ import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
@@ -251,4 +252,25 @@ public interface ICommandContext {
     Audience audience();
 
     Locale getLocale();
+    /**
+     * Runs the rest of a command against a world, loading the world first if it is not loaded.
+     *
+     * <p>If the world is loaded, {@code rest} runs now and its result is returned. Otherwise the world is loaded and
+     * {@code rest} runs on the main thread once it has, its result completing the command then (cooldowns and costs
+     * apply only on success, as usual); this returns {@link ICommandResult#willContinueLater()}.</p>
+     *
+     * @param worldKey The world the command needs
+     * @param rest What to do with it
+     * @return The result, or one saying the command will finish later
+     * @throws CommandException If {@code rest} throws while running now
+     */
+    ICommandResult withWorld(ResourceKey worldKey, WorldAction rest) throws CommandException;
+
+    @FunctionalInterface
+    interface WorldAction {
+
+        ICommandResult run(ServerWorld world) throws CommandException;
+
+    }
+
 }

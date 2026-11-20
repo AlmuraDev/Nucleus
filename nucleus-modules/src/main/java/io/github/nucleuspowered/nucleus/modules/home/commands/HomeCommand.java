@@ -124,62 +124,67 @@ public class HomeCommand implements ICommandExecutor, IReloadableService.Reloada
             wl = home.get();
         }
 
-        Sponge.server().worldManager().world(wl.getWorld().get().key())
-                .orElseThrow(() -> context.createException("command.home.invalid", wl.getName()));
+        // The home's world may be unloaded: load it first, then go on (as Nucleus did on 1.12)
+        if (!Sponge.server().worldManager().worldExists(wl.getResourceKey())) {
+            return context.errorResult("command.home.invalid", wl.getName());
+        }
 
-        final ServerLocation targetLocation = wl.getLocation().orElseThrow(() -> context.createException("command.home.invalid", wl.getName()));
+        return context.withWorld(wl.getResourceKey(), homeWorld -> {
+            final ServerLocation targetLocation = wl.getLocation().orElseThrow(() -> context.createException("command.home.invalid", wl.getName()));
 
-        if (this.isOnlySameDimension) {
-            if (!targetLocation.worldKey().equals(user.worldKey())) {
-                if (!context.testPermission(HomePermissions.HOME_EXEMPT_SAMEDIMENSION)) {
-                    return context.errorResult("command.home.invalid", wl.getName());
+            if (this.isOnlySameDimension) {
+                if (!targetLocation.worldKey().equals(user.worldKey())) {
+                    if (!context.testPermission(HomePermissions.HOME_EXEMPT_SAMEDIMENSION)) {
+                        return context.errorResult("command.home.invalid", wl.getName());
+                    }
                 }
             }
-        }
 
-        try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
-            final UseHomeEvent event = new UseHomeEvent(frame.currentCause(), target, wl);
+            try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
+                final UseHomeEvent event = new UseHomeEvent(frame.currentCause(), target, wl);
 
-            if (Sponge.eventManager().post(event)) {
-                return event.getCancelMessage().map(context::errorResultLiteral)
-                        .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
+                if (Sponge.eventManager().post(event)) {
+                    return event.getCancelMessage().map(context::errorResultLiteral)
+                            .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
+                }
             }
-        }
 
 
-        final TeleportResult result;
-        try {
-            result = homeService.warpToHome(
-                    invokingPlayer,
-                    wl,
-                    this.isSafeTeleport
-            );
-        } catch (final HomeException ex) {
-            return context.errorResultLiteral(Component.text(ex.getMessage()));
-        }
+            final TeleportResult result;
+            try {
+                result = homeService.warpToHome(
+                        invokingPlayer,
+                        wl,
+                        this.isSafeTeleport
+                );
+            } catch (final HomeException ex) {
+                return context.errorResultLiteral(Component.text(ex.getMessage()));
+            }
 
-        if (isOther) {
+            if (isOther) {
+                // Warp to it safely.
+                if (result.isSuccessful()) {
+                    context.sendMessage("command.homeother.success", user.name(), wl.getName());
+                    return context.successResult();
+                } else {
+                    return context.errorResult("command.homeother.fail", user.name(), wl.getName());
+                }
+            }
+
             // Warp to it safely.
             if (result.isSuccessful()) {
-                context.sendMessage("command.homeother.success", user.name(), wl.getName());
+                if (!wl.getName().equalsIgnoreCase(NucleusHomeService.DEFAULT_HOME_NAME)) {
+                    context.sendMessage("command.home.success", wl.getName());
+                } else {
+                    context.sendMessage("command.home.successdefault");
+                }
+
                 return context.successResult();
             } else {
-                return context.errorResult("command.homeother.fail", user.name(), wl.getName());
-            }
-        }
-
-        // Warp to it safely.
-        if (result.isSuccessful()) {
-            if (!wl.getName().equalsIgnoreCase(NucleusHomeService.DEFAULT_HOME_NAME)) {
-                context.sendMessage("command.home.success", wl.getName());
-            } else {
-                context.sendMessage("command.home.successdefault");
+                return context.errorResult("command.home.fail", wl.getName());
             }
 
-            return context.successResult();
-        } else {
-            return context.errorResult("command.home.fail", wl.getName());
-        }
+        });
     }
 
     @Override

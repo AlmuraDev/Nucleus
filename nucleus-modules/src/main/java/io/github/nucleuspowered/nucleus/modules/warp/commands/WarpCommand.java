@@ -131,79 +131,77 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
         // Permission checks are done by the parser.
         final WarpService service = context.getServiceCollection().getServiceUnchecked(WarpService.class);
         final Warp wd = context.requireOne(service.warpElement(true));
-        final ServerWorld worldProperties = wd.getWorld().orElseThrow(() -> context.createException(
-                "command.warp.worlddoesnotexist"
-        ));
-
-        // Load the world in question
-        if (!wd.getLocation().isPresent()) {
-            return context.errorResult("command.warp.worldnotloaded");
+        if (!Sponge.server().worldManager().worldExists(wd.getResourceKey())) {
+            return context.errorResult("command.warp.worlddoesnotexist");
         }
 
-        try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
-            frame.pushCause(context.getCommandSourceRoot());
-            final UseWarpEvent event = new UseWarpEvent(frame.currentCause(), player.uniqueId(), wd);
-            if (Sponge.eventManager().post(event)) {
-                return event.getCancelMessage().map(context::errorResultLiteral)
-                        .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
-            }
+        // The warp's world may be unloaded: load it first, then go on (as Nucleus did on 1.12)
+        return context.withWorld(wd.getResourceKey(), warpWorld -> {
+            try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
+                frame.pushCause(context.getCommandSourceRoot());
+                final UseWarpEvent event = new UseWarpEvent(frame.currentCause(), player.uniqueId(), wd);
+                if (Sponge.eventManager().post(event)) {
+                    return event.getCancelMessage().map(context::errorResultLiteral)
+                            .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
+                }
 
-            final Optional<Double> i = wd.getCost();
-            final double cost = i.orElse(this.defaultCost);
+                final Optional<Double> i = wd.getCost();
+                final double cost = i.orElse(this.defaultCost);
 
-            boolean charge = false;
-            final IEconomyServiceProvider economyServiceProvider = context.getServiceCollection().economyServiceProvider();
-            if (!isOther && economyServiceProvider.serviceExists() && cost > 0 &&
-                    !context.testPermission(WarpPermissions.EXEMPT_COST_WARP)) {
-                if (economyServiceProvider.withdrawFromPlayer(player.uniqueId(), cost, false)) {
-                    charge = true; // only true for a warp by the current subject.
+                boolean charge = false;
+                final IEconomyServiceProvider economyServiceProvider = context.getServiceCollection().economyServiceProvider();
+                if (!isOther && economyServiceProvider.serviceExists() && cost > 0 &&
+                        !context.testPermission(WarpPermissions.EXEMPT_COST_WARP)) {
+                    if (economyServiceProvider.withdrawFromPlayer(player.uniqueId(), cost, false)) {
+                        charge = true; // only true for a warp by the current subject.
+                    } else {
+                        return context.errorResult("command.warp.cost.nomoney", wd.getName(),
+                                economyServiceProvider.getCurrencySymbol(cost));
+                    }
+                }
+
+                // We have a warp data, warp them.
+                if (isOther) {
+                    context.sendMessage("command.warps.namedstart",
+                            context.getDisplayName(player.uniqueId()),
+                            wd.getName());
                 } else {
-                    return context.errorResult("command.warp.cost.nomoney", wd.getName(),
-                            economyServiceProvider.getCurrencySymbol(cost));
-                }
-            }
-
-            // We have a warp data, warp them.
-            if (isOther) {
-                context.sendMessage("command.warps.namedstart",
-                        context.getDisplayName(player.uniqueId()),
-                        wd.getName());
-            } else {
-                context.sendMessage("command.warps.start", wd.getName());
-            }
-
-            // Warp them.
-            final boolean isSafe = !context.hasFlag("f") && this.isSafeTeleport;
-
-            final INucleusLocationService safeLocationService = context.getServiceCollection().teleportService();
-            final TeleportHelperFilter filter = safeLocationService.getAppropriateFilter(player, isSafe);
-
-            final TeleportResult result = safeLocationService.teleportPlayer(
-                    player,
-                    wd.getLocation().get(),
-                    wd.getRotation(),
-                    false,
-                    TeleportScanners.NO_SCAN.get(),
-                    filter
-            );
-
-            if (!result.isSuccessful()) {
-                if (charge) {
-                    economyServiceProvider.depositInPlayer(player.uniqueId(), cost, false);
+                    context.sendMessage("command.warps.start", wd.getName());
                 }
 
-                // Don't add the cooldown if enabled.
-                return context.errorResult(result == TeleportResult.FAIL_NO_LOCATION ? "command.warps.nosafe" :
-                        "command.warps.cancelled");
-            }
+                // Warp them.
+                final boolean isSafe = !context.hasFlag("f") && this.isSafeTeleport;
 
-            if (isOther) {
-                context.sendMessageTo(player, "command.warps.warped", wd.getName());
-            } else if (charge) {
-                context.sendMessage("command.warp.cost.charged", economyServiceProvider.getCurrencySymbol(cost));
-            }
+                final INucleusLocationService safeLocationService = context.getServiceCollection().teleportService();
+                final TeleportHelperFilter filter = safeLocationService.getAppropriateFilter(player, isSafe);
 
-            return context.successResult();
-        }
+                final TeleportResult result = safeLocationService.teleportPlayer(
+                        player,
+                        wd.getLocation().get(),
+                        wd.getRotation(),
+                        false,
+                        TeleportScanners.NO_SCAN.get(),
+                        filter
+                );
+
+                if (!result.isSuccessful()) {
+                    if (charge) {
+                        economyServiceProvider.depositInPlayer(player.uniqueId(), cost, false);
+                    }
+
+                    // Don't add the cooldown if enabled.
+                    return context.errorResult(result == TeleportResult.FAIL_NO_LOCATION ? "command.warps.nosafe" :
+                            "command.warps.cancelled");
+                }
+
+                if (isOther) {
+                    context.sendMessageTo(player, "command.warps.warped", wd.getName());
+                } else if (charge) {
+                    context.sendMessage("command.warp.cost.charged", economyServiceProvider.getCurrencySymbol(cost));
+                }
+
+                return context.successResult();
+            }
+        });
     }
 }

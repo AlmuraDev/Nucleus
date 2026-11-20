@@ -110,6 +110,16 @@ public class RTPConfig {
         return this.perWorldPermissions;
     }
 
+    /** The configured default world, if any, whether it is loaded or not. */
+    public Optional<ResourceKey> getDefaultWorldKey() {
+        if (this.defaultWorld == null || this.defaultWorld.equalsIgnoreCase("")) {
+            return Optional.empty();
+        }
+
+        final ResourceKey key = ResourceKey.resolve(this.defaultWorld);
+        return Sponge.server().worldManager().worldExists(key) ? Optional.of(key) : Optional.empty();
+    }
+
     public Optional<ServerWorld> getDefaultWorld() {
         if (this.defaultWorld == null || this.defaultWorld.equalsIgnoreCase("")) {
             return Optional.empty();

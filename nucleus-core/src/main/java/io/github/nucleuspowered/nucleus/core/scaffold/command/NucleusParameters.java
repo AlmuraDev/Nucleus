@@ -141,6 +141,9 @@ public final class NucleusParameters {
     public static final Parameter.Value<ResourceKey> KNOWN_WORLD =
             Parameter.builder(ResourceKey.class).key(Keys.WORLD).addParser(new KnownWorldParameter()).build();
 
+    public static final Parameter.Value<ResourceKey> KNOWN_WORLD_OPTIONAL =
+            Parameter.builder(ResourceKey.class).key(Keys.WORLD).addParser(new KnownWorldParameter()).optional().build();
+
     public static final Parameter.Value<ResourceKey> OFFLINE_WORLD =
             Parameter.builder(ResourceKey.class)
                     .key(Keys.WORLD)
