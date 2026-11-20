@@ -64,12 +64,17 @@ public class CommandResultImpl implements ICommandResult {
 
     @Override
     public Optional<Component> getErrorMessage(final ICommandContext source) {
+        // SUCCESS, FAILURE and WILL_CONTINUE carry no message
+        if (this.key == null) {
+            return Optional.empty();
+        }
         return Optional.of(source.getMessage(this.key, this.args));
     }
 
     @Override
     public CommandResult getResult(final ICommandContext source) {
-        return this.success ? CommandResult.success() :
+        // A command that will finish later (a warmup, a world still loading) has not failed: it reports its own outcome
+        return this.success || this.willContinue ? CommandResult.success() :
                 this.getErrorMessage(source).map(CommandResult::error).orElseGet(() -> CommandResult.error(Component.text("Unknown error occurred", Style.style(NamedTextColor.RED))));
     }
 
