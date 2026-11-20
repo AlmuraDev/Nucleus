@@ -32,6 +32,7 @@ import io.github.nucleuspowered.nucleus.modules.world.commands.properties.SetLoa
 import io.github.nucleuspowered.nucleus.modules.world.commands.properties.SetPvpEnabled;
 import io.github.nucleuspowered.nucleus.modules.world.config.WorldConfig;
 import io.github.nucleuspowered.nucleus.modules.world.listeners.EnforceGamemodeListener;
+import io.github.nucleuspowered.nucleus.modules.world.listeners.LoginWorldLoadListener;
 import io.github.nucleuspowered.nucleus.modules.world.listeners.WorldListener;
 
 import java.util.Arrays;
@@ -83,6 +84,7 @@ public class WorldModule implements IModule.Configurable<WorldConfig> {
     public Collection<Class<? extends ListenerBase>> getListeners() {
         return Arrays.asList(
                 EnforceGamemodeListener.class,
+                LoginWorldLoadListener.class,
                 WorldListener.class
         );
     }
